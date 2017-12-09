@@ -1,0 +1,335 @@
+@font-face {
+	font-family: 'M+ 1p light';
+	src:local('mplus') ,
+		url('../fonts/mplus-1p-light.ttf');
+}
+
+::selection {background: #555; color: #CCC;}
+
+::-webkit-scrollbar {
+    width: 8px;
+	height: 5px;
+}
+ 
+/*::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}*/
+ 
+::-webkit-scrollbar-thumb {
+    /*-webkit-border-radius: 10px;
+    border-radius: 10px;*/
+    background: rgba(0,0,0,0.2); 
+    /*-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); */
+}
+
+.btn:focus {
+	outline:none;
+}
+
+* {
+	font-family: "M+ 1p light";
+}
+
+#eula_div {
+    overflow: auto;
+    border: 1px solid gray;
+    padding: 8px;
+    margin: 5px 2px;
+    width: calc(100% - 4px);
+    height: 400px;
+}
+
+#eula_div p {
+	white-space: normal;
+}
+
+h2 {
+	margin: 4px 0px 8px;
+    font-size: 16pt;
+}
+
+body {
+	overflow: hidden;
+}
+
+p {
+	white-space: nowrap;
+	overflow: auto;
+    margin-bottom: 2px;
+}
+
+button, a, label {
+    -webkit-user-select: none;
+    -webkit-user-drag:none;
+}
+
+mark {
+    margin: 0 1px;
+}
+
+dt, dd {
+    margin: 3px 0;
+}
+
+/*dpi測定*/
+#dpi {
+  height: 1in;
+  left: -100%;
+  position: absolute;
+  top: -100%;
+  width: 1in;
+}
+
+/*プレイヤー一覧*/
+.players {
+	height: 30px;
+	width: 240%;
+	overflow: auto;
+	white-space: nowrap;
+}
+
+.s-pad {
+	padding: 0 5px;
+}
+
+/*ボタン横並び*/
+.bt-one {
+    margin: 0.25% 0.5%;
+    width: 99%;
+}
+.bt-two {
+    margin: 0.25% 0.5%;
+    width: 49%;
+}
+.bt-four {
+    margin: 0.5%;
+    width: 24%;
+}
+
+/*ドラッグエリア*/
+.drag_area {
+    margin: 4px;
+    border: dotted 2px #7fbfff;
+    padding: 6px;
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+/*タブの内容*/
+.tab-pane {
+    background-color: white;
+}
+
+/*検索inputの位置合わせ*/
+.dataTables_filter {
+    width: 116.6666666666%;
+}
+
+/*プロファイル用css*/
+.left-input {
+    width: 80%;
+    display: inline-block;
+    margin-right: 1%;
+}
+.right-button {
+    width: 18%;
+    height: 24px;
+    display: inline-block;
+    padding: 1px 4px;
+}
+
+/*管理画面用css*/
+#manage_modal input {
+    height: 22px;
+	width: 120px;
+    padding: 1px 5px;
+}
+#manage_modal .dropdown-toggle {
+    padding: 0px 5px;
+    width: 120px;
+    overflow: hidden;
+}
+
+/*オーバーレイメニュー*/
+#menu {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0,0,0,0.9);
+    z-index: 100;
+    color: white;
+}
+#menu_button {
+    cursor: pointer;
+    width: 100px;
+    height: 35px;
+    position: absolute;
+    top: -5px;
+    right: 5px;
+    -webkit-user-select: none;
+    padding: 8px 5px 0px;
+    z-index: 101;
+    box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.25);
+    border-radius: 3px;
+    background-color: #555;
+    
+    display: none;
+}
+/*<a>MENU</a>*/
+#menu_title {
+    text-decoration: none;
+    color: white;
+    line-height: 24px;
+    font-size: 13.5pt;
+    letter-spacing: 0.05em;
+}
+/*下向き矢印*/
+#menu_icon {
+    float: right;
+    width: 15px;
+    height: 15px;
+    border-top: 1px solid white;
+    border-right: 1px solid white;
+    -webkit-transform: rotate(135deg);
+    transform: rotate(135deg);
+    margin-right: 8px;
+}
+
+/*起動時の読み込みオーバーレイ*/
+#loading {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100000;
+}
+#loading_text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 50px;
+    width: 100%;
+    margin-top: -25px;
+    margin-left: -50%;
+    text-align: center;
+    color: white;
+    z-index: 100001;
+    font-size: 20pt;
+}
+#loading_bar {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    margin-top: 20px;
+    width: 100%;
+    height: 3px;
+    overflow: hidden;
+    background-repeat: repeat-x;
+    background-size: 70px 100%;
+    background-image: linear-gradient(to left,#999 50px,transparent 0);
+    vertical-align: middle;
+    animation: animation21 10s linear infinite;
+}
+@keyframes animation21 {
+    0% { background-position: 0; }
+    100% { background-position: 100%; }
+}
+
+/*ポート開放ポップアップのSNSシェア*/
+.popover-content a {
+    display: inline-block;
+    height: 30px;
+    width: 33.333333%;
+    text-align: center;
+}
+.popover-content img {
+    height: 30px;
+    cursor: pointer;
+}
+.popover-content a:hover {
+    opacity: 0.6;
+}
+
+/*スライダー*/
+input[type="range"].custom {
+	-webkit-appearance: none;
+	background-color: #555;
+	border:0;
+	height:2px;
+	margin:0;
+}
+input[type="range"].custom::-webkit-slider-thumb{
+	-webkit-appearance: none;
+	background-color: #666;
+	text-align:center;
+	width: 15px;
+	height: 15px;
+	border:1px solid #FFF;
+	border-radius:15px;
+	cursor:pointer;
+	box-sizing:border-box;
+}
+input[type="range"].custom::-webkit-slider-thumb:hover {
+	background-color: #777;
+}
+
+input[type="range"].custom:focus {
+	outline:none;
+}
+
+/*リサイズ*/
+.ui-resizable-handle {
+    position: absolute;
+    font-size: 0.1px;
+    display: block;
+    -ms-touch-action: none;
+    touch-action: none;
+}
+.ui-resizable-s {
+	cursor: s-resize;
+	height: 4px;
+	width: 100%;
+	bottom: -3px;
+	left: 0;
+}
+.ui-resizable-e {
+	cursor: e-resize;
+	width: 4px;
+	height: 100%;
+	right: -3px;
+	top: 0;
+}
+.ui-resizable-se {
+	cursor: se-resize;
+	width: 4px;
+	height: 4px;
+	right: -3px;
+	bottom: -3px;
+}
+
+#main_left {
+    display: block;
+}
+#main_right {
+    width: _;
+}
+
+@media screen and (max-width: 1380px) {
+    #menu_button {
+        display: block;
+    }
+    #main_left {
+        display: none;
+    }
+    #main_right {
+        width: 100%;
+    }
+    #detail_tab {
+        margin-right: 102px;
+    }
+}
