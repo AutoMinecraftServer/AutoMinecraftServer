@@ -5,7 +5,7 @@ Minecraftのサーバーを自動化するためのソフトです。
 
 ## 使い方
 
-<http://xperd.net/tools/ams/>で配布されているものをインストールして使ってください。  
+<http://xperd.net/auto-minecraft-server/>で配布されているものをインストールして使ってください。  
 
 ## 作者
 
