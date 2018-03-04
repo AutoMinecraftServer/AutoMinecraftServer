@@ -11,6 +11,7 @@ var fs = require('fs');
 var path = require('path');
 var copy = require('ncp');
 var del = require('del');
+var GhReleases = require('electron-gh-releases')
 var settings;
 
 var slash;
@@ -128,9 +129,19 @@ app.on('ready', function() {
     ipc.on('read_zip', read_zip);
     
     if (process.platform === 'win32') {
-    var autoupdater = electron.autoUpdater;
-    autoupdater.setFeedURL('http://xperd.net/tools/ams/update/win32-' + process.arch);
-    autoupdater.on("update-downloaded", function(e, a){
+    var updater = new GhReleases({
+        repo: 'yuta0801/AutoMinecraftServer',
+        currentVersion: app.getVersion()
+    });
+
+    updater.check(function(err, status) {
+        if (err && err.message === 'There is no newer version.') {
+            setTimeout(function(){mainWindow.webContents.send('update', 'update-not-available')}, 3000);
+        } else if (!err && status) updater.download();
+    });
+
+    updater.on('update-downloaded', function() {
+        setTimeout(function(){mainWindow.webContents.send('update', 'update-available')}, 3000);
         require("electron").dialog.showMessageBox({
             title: 'アップデートのダウンロード完了',
             message: '今すぐ最新のソフトに更新できます',
@@ -141,22 +152,7 @@ app.on('ready', function() {
                 if (i === 0) require("electron").autoUpdater.quitAndInstall();
             }
         );
-    });
-    autoupdater.on('update-not-available', function(e, a){
-        setTimeout(function(){mainWindow.webContents.send('update', 'update-not-available')}, 3000);
-    });
-    autoupdater.on('update-available', function(e, a){
-        setTimeout(function(){mainWindow.webContents.send('update', 'update-available')}, 3000);
-    });
-    autoupdater.on("error", function(e, a){
-        require("electron").dialog.showMessageBox({
-            title: 'アップデートチェック',
-            message: 'アップデートエラーが起きました',
-            detail : e.message,
-            buttons: ['OK']
-        });
-    });
-    autoupdater.checkForUpdates();
+    })
     }
 });
 
