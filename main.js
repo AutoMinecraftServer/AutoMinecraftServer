@@ -129,6 +129,13 @@ app.on('ready', function() {
     ipc.on('read_zip', read_zip);
     
     if (process.platform === 'win32') {
+    var now = Date.now();
+    var sendUpdate = val => {
+      setTimeout(() => {
+        mainWindow.webContents.send('update', val);
+      }, (now + 3000 < Date.now()) ? 0 : 3000 - (Date.now() - now));
+    };
+
     var updater = new GhReleases({
         repo: 'yuta0801/AutoMinecraftServer',
         currentVersion: app.getVersion()
@@ -136,12 +143,14 @@ app.on('ready', function() {
 
     updater.check(function(err, status) {
         if (err && err.message === 'There is no newer version.') {
-            setTimeout(function(){mainWindow.webContents.send('update', 'update-not-available')}, 3000);
+            sendUpdate('update-not-available');
+        } else if (err && err.message === 'Can not find Squirrel') {
+            sendUpdate('update-available');
         } else if (!err && status) updater.download();
     });
 
     updater.on('update-downloaded', function() {
-        setTimeout(function(){mainWindow.webContents.send('update', 'update-available')}, 3000);
+        sendUpdate('update-ready');
         require("electron").dialog.showMessageBox({
             title: 'アップデートのダウンロード完了',
             message: '今すぐ最新のソフトに更新できます',
