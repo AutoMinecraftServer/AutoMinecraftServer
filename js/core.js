@@ -64,7 +64,7 @@ function load(){
     del = require('del');
     encoding = require('encoding-japanese');
     upnp = require('nat-upnp').createClient();
-    
+
     //右クリックメニュー
     $(document).on('contextmenu', function(e){
         var text = window.getSelection().toString();
