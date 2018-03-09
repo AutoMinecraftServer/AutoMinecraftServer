@@ -64,7 +64,7 @@ function load(){
     del = require('del');
     encoding = require('encoding-japanese');
     upnp = require('nat-upnp').createClient();
-    
+
     //右クリックメニュー
     $(document).on('contextmenu', function(e){
         var text = window.getSelection().toString();
@@ -184,8 +184,10 @@ function load(){
     });
     //アップデート確認
     ipc.on('update', function(e, a){
-        if (a === 'update-not-available') $('.update').text('バージョン:' + app.getVersion() + '[最新]');
-        else if (a === 'update-available') $('.update').text('バージョン:' + app.getVersion() + '[アップデートあり<要アプリ再起動>]');
+        var set = (msg, title) => $('.update').append($('<span>').text(msg).attr('title', title));
+        if (a === 'update-not-available') set('[最新]', '');
+        if (a === 'update-available') set('[アップデートあり]', '手動で更新でしてください');
+        if (a === 'update-ready') set('[アップデート準備完了]', '次回起動時に更新されます');
     });
     //プロファイル設定画面
     $('#profile_modal').on('show.bs.modal', function(event){
