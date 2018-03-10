@@ -632,6 +632,7 @@ function load(){
             url: 'https://account.mojang.com/documents/minecraft_eula',
             type: 'GET',
             success: function(data){
+                    data = data.replace('/images', 'https://account.mojang.com/images');
                     var s = data.indexOf('<div id="main"');
                     var e = data.indexOf('<footer');
                     $('#eula_div').html(data.slice(s, e - 7));
