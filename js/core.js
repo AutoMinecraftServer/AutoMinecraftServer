@@ -59,6 +59,7 @@ var path = require('path');
 var del = require('del');
 var encoding = require('encoding-japanese');
 var upnp = require('nat-upnp').createClient();
+var request = require('request');
 
 //右クリックメニュー
 $(document).on('contextmenu', function(e){
@@ -80,7 +81,7 @@ $(document).on('contextmenu', function(e){
             {label: '取消', accelerator: 'CmdOrCtrl+Z', role: 'undo'},
             {label: 'やり直し', accelerator: 'CmdOrCtrl+Y', role: 'redo'}
         ]).popup(remote.getCurrentWindow());
-    } else if ($(e.target).get(0).tagName === 'MARK'){
+    } else if ($(e.target).parent().get(0).className === 'player'){
         var name = $(e.target).text();
         var id = $(e.target).attr('class').slice(0, $(e.target).attr('class').indexOf('_'));
         $('#copy_player').remove();
@@ -911,13 +912,15 @@ function add_line(id, text){
         clearInterval(nopeoples[id]);
         $('#' + id + '_nopeople').text('無人時間：--:--:--');
         var name = e.slice(index + 2, e.indexOf('[', index));
-        $('#' + id + '_players').append('<mark class="' + id + '_' + name + '">' + name + '</mark>');
+        getUUID(name, uuid => {
+            $('#' + id + '_players').append('<span class="player" id="' + id + '_' + name + '"><img src="https://crafatar.com/avatars/' + uuid + '"><mark>' + name + '</mark><span>');
+        });
         //$('#' + id + '_status_players').append('<mark class="' + id + '_' + name + '">' + name + '</mark>');
         players[id].push(name);
     }
     else if (e.indexOf('lost connection') > -1){
         var index_ = e.indexOf('lost connection', index);
-        $('.' + id + '_' + e.slice(index + 2, index_ - 1)).remove();
+        $('#' + id + '_' + e.slice(index + 2, index_ - 1)).remove();
         players[id].splice(players[id].indexOf(e.slice(index + 2, index_ - 1)), 1);
         if ($('#' + id + '_players').text() === ''){
             nopeople_count[id] = 0;
@@ -1305,7 +1308,7 @@ function start_download(id, ver, mode, latest, per){
     if (mode === 'Vanila'){
         url = 'https://s3.amazonaws.com/Minecraft.Download/versions/' + ver + '/minecraft_server.' + ver + '.jar';
         file = 'minecraft_server.' + ver + '.jar';
-        require('request-progress')(require('request')(url), { throttle: 200 })
+        require('request-progress')(request(url), { throttle: 200 })
         .on('progress', function(state){
             percent(p(state.percent * 100), 'ダウンロード中... ' + round(state.time.remaining) + '(' + p(state.percent * 100) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
         })
@@ -1337,7 +1340,7 @@ function start_download(id, ver, mode, latest, per){
                 url = data.slice(start + 4, end);
                 file = path.basename(url);
                 percent(p(5), 'ダウンロード開始中...(' + p(5) + '%)');
-                require('request-progress')(require('request')(url), { throttle: 200 })
+                require('request-progress')(request(url), { throttle: 200 })
                 .on('progress', function(state){
                     percent(p(Math.round(5 + state.percent * 100 * 0.1)), 'ダウンロード中... ' + round(state.time.remaining) + '(' + p(Math.round(5 + state.percent * 100 * 0.1)) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
                 })
@@ -1437,6 +1440,16 @@ function tohtml(t){
 function uuid(){
     var S4 = function(){  return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1); }
     return ( S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4()) ;
+}
+
+function getUUID(name, callback) {
+    request({
+        url: 'https://api.mojang.com/users/profiles/minecraft/' + name,
+        json: true,
+    }, (err, res, body) => {
+        if (err || !body) callback('');
+        else callback(body.id);
+    });
 }
 
 //現在時刻

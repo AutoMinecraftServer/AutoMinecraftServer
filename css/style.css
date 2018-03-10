@@ -63,7 +63,7 @@ button, a, label {
     -webkit-user-drag:none;
 }
 
-mark {
+.players span {
     margin: 0 1px;
 }
 
@@ -86,6 +86,12 @@ dt, dd {
 	width: 240%;
 	overflow: auto;
 	white-space: nowrap;
+}
+
+.players img {
+  width: 22px;
+  height: 22px;
+  vertical-align: text-top;
 }
 
 .s-pad {
