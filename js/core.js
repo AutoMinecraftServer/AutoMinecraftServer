@@ -1313,8 +1313,7 @@ function start_download(id, ver, mode, latest, per){
         file = 'minecraft_server.' + ver + '.jar';
         require('request-progress')(require('request')(url), { throttle: 200 })
         .on('progress', function(state){
-            console.log(state);
-            percent(p(state.percentage * 100), 'ダウンロード中... 残り' + state.time.remaining + '秒(' + p(state.percentage * 100) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
+            percent(p(state.percent * 100), 'ダウンロード中... 残り' + state.time.remaining + '秒(' + p(state.percent * 100) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
         })
         .on('error', function(err){ })
         .pipe(fs.createWriteStream(profiles[id].folder + slash + file))
@@ -1346,7 +1345,7 @@ function start_download(id, ver, mode, latest, per){
                 percent(p(5), 'ダウンロード開始中...(' + p(5) + '%)');
                 require('request-progress')(require('request')(url), { throttle: 200 })
                 .on('progress', function(state){
-                    percent(p(Math.round(5 + state.percentage * 100 * 0.1)), 'ダウンロード中... 残り' + state.time.remaining + '秒(' + p(Math.round(5 + state.percentage * 100 * 0.1)) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
+                    percent(p(Math.round(5 + state.percent * 100 * 0.1)), 'ダウンロード中... 残り' + state.time.remaining + '秒(' + p(Math.round(5 + state.percent * 100 * 0.1)) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
                 })
                 .on('error', function(err){})
                 .pipe(fs.createWriteStream(profiles[id].folder + slash + file))
