@@ -128,7 +128,7 @@ app.on('ready', function() {
     ipc.on('unzip', unzip);
     ipc.on('read_zip', read_zip);
 
-    if (process.platform === 'win32') {
+    // アップデートチェック
     var now = Date.now();
     var sendUpdate = val => {
       setTimeout(() => {
@@ -162,7 +162,6 @@ app.on('ready', function() {
             }
         );
     })
-    }
 });
 
 function load_data(e, a){
