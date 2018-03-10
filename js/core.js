@@ -47,7 +47,6 @@ function ver(e){
 }
 
 var electron = require('electron');
-var shell = electron.shell;
 var remote = electron.remote;
 var ipc = electron.ipcRenderer;//require('ipc');
 var dialog = remote.dialog;//remote.require('dialog');
@@ -75,7 +74,7 @@ $(document).on('contextmenu', function(e){
             {label: 'すべて選択', accelerator: 'CmdOrCtrl+A', role: 'selectall'},
             {type: 'separator'},
             {label: '「' + text.slice(0, 15) + text_ + '」を検索', enabled: b, click: function(){
-                shell.openExternal('http://google.co.jp/search?q=' + encodeURIComponent(text))
+                window.open('http://google.co.jp/search?q=' + encodeURIComponent(text))
             }},
             {type: 'separator'},
             {label: '取消', accelerator: 'CmdOrCtrl+Z', role: 'undo'},
@@ -103,7 +102,7 @@ $(document).on('contextmenu', function(e){
         remote.Menu.buildFromTemplate([
             {label: 'コピー', accelerator: 'CmdOrCtrl+C', role: 'copy', visible: b},
             {label: '「' + text.slice(0, 15) + text_ + '」を検索', enabled: b, click: function(){
-                shell.openExternal('http://google.co.jp/search?q=' + encodeURIComponent(text))
+                window.open('http://google.co.jp/search?q=' + encodeURIComponent(text))
             }}
         ]).popup(remote.getCurrentWindow());
 });
@@ -1204,7 +1203,7 @@ function create_detail(extra){
             content: function(){
                 var ad = port[e.id].global_ip + '%3A' + port[e.id].port;
                 var r = '<p>ポート番号: ' + un_to(port[e.id].port) + '</p><p>ローカルメインIP: ' + un_to(port[e.id].local_ip) + '</p><p>ゲートウェイIP: ' + un_to(port[e.id].gateway_ip) + '</p><p>グローバルIP: ' + un_to(port[e.id].global_ip) + '</p><p>外部疎通チェック: ' + un_to(port[e.id].check) + '</p>';
-                if (port[e.id].port !== undefined && port[e.id].global_ip !== undefined) r += '<button id="' + e.id + '_pop_button" class="btn btn-primary btn-block pop_button" data-clipboard-text="' + port[e.id].global_ip + ':' + port[e.id].port + '">アドレスをコピーする</button><a onclick="shell.openExternal(\'http://twitter.com/share?url=http%3A%2F%2Fxperd.net%2Ftools%2Fams%2F&text=Minecraftマルチサーバー[' + profiles[e.id].name + '](' + ad + ')\')"  style="background-color: #5EAADE;"><img src="twitter.jpg" alt="Twitter"></a><a onclick="shell.openExternal(\'http://www.facebook.com/share.php?u=' + ad + '\')" style="background-color: #3A589E;"><img src="facebook.jpg" alt="Facebook"></a><a onclick="shell.openExternal(\'https://plus.google.com/share?url=' + ad + '\')" style="background-color: #DC4E42;"><img src="google-plus.jpg" alt="Google+"></a>';
+                if (port[e.id].port !== undefined && port[e.id].global_ip !== undefined) r += '<button id="' + e.id + '_pop_button" class="btn btn-primary btn-block pop_button" data-clipboard-text="' + port[e.id].global_ip + ':' + port[e.id].port + '">アドレスをコピーする</button><a href="http://twitter.com/share?url=http%3A%2F%2Fxperd.net%2Ftools%2Fams%2F&text=Minecraftマルチサーバー[' + profiles[e.id].name + '](' + ad + ')" target="_blank" style="background-color: #5EAADE;"><img src="twitter.jpg" alt="Twitter"></a><a href="http://www.facebook.com/share.php?u=' + ad + '" target="_blank" style="background-color: #3A589E;"><img src="facebook.jpg" alt="Facebook"></a><a href="https://plus.google.com/share?url=' + ad + '" target="_brank" style="background-color: #DC4E42;"><img src="google-plus.jpg" alt="Google+"></a>';
                 return r;
             },
         });

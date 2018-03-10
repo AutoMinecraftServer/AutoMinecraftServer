@@ -3,6 +3,7 @@
 
 var electron = require("electron");
 var app = electron.app;
+var shell = electron.shell;
 var BrowserWindow = electron.BrowserWindow;
 var ipc = electron.ipcMain;
 var dialog = electron.dialog;
@@ -113,6 +114,10 @@ app.on('ready', function() {
     else{
         mainWindow = new BrowserWindow({width: 1200, height: 800, "min-width": 800, "min-height": 500, icon: __dirname + '/favicon.ico', frame: true});
         mainWindow.loadURL('file://' + __dirname + '/index.html');
+        mainWindow.webContents.on('new-window', (event, url) => {
+            event.preventDefault();
+            shell.openExternal(url);
+        });
         mainWindow.on('closed', function() {
             mainWindow = null;
         });
