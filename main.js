@@ -35,7 +35,7 @@ var handleStartupEvent = function() {
   if (process.platform !== 'win32') {
     return false;
   }
-  
+
   function executeSquirrelCommand(args, done) {
       var updateDotExe = path.resolve(path.dirname(process.execPath), '..', 'update.exe');
       require('child_process').spawn(updateDotExe, args, { detached: true });
@@ -66,7 +66,7 @@ var handleStartupEvent = function() {
       //   explorer context menus
 
       // Always quit when done
-      
+
       app.quit();
 
       return true;
@@ -127,7 +127,7 @@ app.on('ready', function() {
     ipc.on('save_properties', save_properties);
     ipc.on('unzip', unzip);
     ipc.on('read_zip', read_zip);
-    
+
     if (process.platform === 'win32') {
     var now = Date.now();
     var sendUpdate = val => {
@@ -137,7 +137,7 @@ app.on('ready', function() {
     };
 
     var updater = new GhReleases({
-        repo: 'yuta0801/AutoMinecraftServer',
+        repo: 'AutoMinecraftServer/AutoMinecraftServer',
         currentVersion: app.getVersion()
     });
 
