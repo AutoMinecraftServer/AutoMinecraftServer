@@ -304,8 +304,8 @@ $('#profile_save').click(function(){
     a.name = $('#name').val();
     a.folder = $('#folder_input').val();
     a.jar = $('#jar_input').val();
-    a.max_memory = $('#max_memory_text').val().slice(0, -2);
-    a.min_memory = $('#min_memory_text').val().slice(0, -2);
+    a.max_memory = parseInt($('#max_memory_text').val());
+    a.min_memory = parseInt($('#min_memory_text').val());
     a.upnp = $('#upnp_check').prop('checked');
     a.backup = $('#backup_check').prop('checked');
     a.backup_minute = $('#backup_minute').val();
