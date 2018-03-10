@@ -143,10 +143,11 @@ function load(){
     });
     //$.fn.dataTable.moment('YYYY/MM//DD HH:mm:ss.SSS');
     //最新情報読み込み
-    $.ajax({ url: 'http://xperd.net/tools/ams/info.php?', type: 'GET',
+    var org = 'https://raw.githubusercontent.com/AutoMinecraftServer/AutoMinecraftServer/';
+    $.ajax({ url: org + 'master/parts/info.html', type: 'GET',
         success: function(data){ $('.info').html(data); }, error: function(xhr, status, err){} });
     //Minecraftバージョン情報取得
-    $.ajax({ url: 'http://xperd.net/tools/ams/versions.php?', type: 'GET',
+    $.ajax({ url: org + 'master/parts/versions.html', type: 'GET',
         success: function(data){ $('#version_body').html(data); }, error: function(xhr, status, err){} });
     /*$.ajax({
         url: 'http://xperd.net/tools/ams/version.txt?',
@@ -157,7 +158,7 @@ function load(){
         },
         error: function(xhr, status, err){}
     });*/
-    
+
     //プロファイル、設定ファイル読み込み
     fs.readFile(base_dir + 'profile.ams', 'utf8', function(e, t){
         if (e){
@@ -205,7 +206,7 @@ function load(){
                 if ($(this).data('type') === 'world') $('#jar_input').attr('placeholder', 'ダウンロードのみ');
                 else if ($(this).data('type') === 'all') $('#jar_input').attr('placeholder', 'Zipから読み込み/ダウンロードのみ');
             }
-        } 
+        }
         else {
             $('#change_check').parent().parent().show();
             $('#version').parent().parent().hide();
@@ -234,7 +235,7 @@ function load(){
         $('#jar_input, #jar_select').prop('disabled', false);
         $('#jar_choice').html('必ず選択してください<span class="caret"></span>');
         $('#jar_list').html('');
-        
+
         $('#change_check').prop('checked', false);
         $('#change_check').parent().parent().hide();
         $('#version').parent().parent().hide();
@@ -347,13 +348,13 @@ function load(){
                     profile_ready(a.id, true);
                     //reload_profile();
                     create_detail(a.id);
-                } 
+                }
                 else {
                     var index = $('#version').text().indexOf(' ');
                     progress(a.id, { ver: $('#version').text().slice(index + 1, -1), type: $('#version').text().slice(0, index), latest: $('#latest_check').prop('checked') });
                 }
             }
-        } 
+        }
         else {
             profiles[a.id] = a;
             fs.writeFile(base_dir + 'profile.ams', JSON.stringify(profiles), (error) => { /* handle error */ });
@@ -430,7 +431,7 @@ function load(){
                             data += '<tr><th>' + e_ + '</th><th><button type="button" class="btn btn-danger command_del" data-text="' + e_ + '">削除</button></th></tr>';
                         });
                         $('#command_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">コマンド</th><th data-sortable="false">操作</th></tr></thead><tbody>' + data + '</tbody></table>');
-                    } 
+                    }
                     else if (b === 0){
                         indices[a.id].splice(indices[a.id].indexOf(text), 1);
                         $(this).parent().parent().remove();
@@ -462,7 +463,7 @@ function load(){
         if (data === undefined || data === null) return;
         properties_location = data.location;
         properties = data.data;
-        for (var key in properties) 
+        for (var key in properties)
         {
             var val = properties[key];
             switch (key){
@@ -489,7 +490,7 @@ function load(){
         if (data === undefined || data === null){
             $('#log_content').html('<h3>ログファイルはありません</h3>');
             return;
-        } 
+        }
         else if (data.length <= 1){
             $('#log_content').html('<h3>ログファイルはありません</h3>');
             return;
@@ -516,7 +517,7 @@ function load(){
         if (data === undefined || data === null){
             $('#backup_content').html('<h3>バックアップはありません</h3>');
             return;
-        } 
+        }
         else if (data.length <= 1){
             $('#backup_content').html('<h3>バックアップはありません</h3>');
             return;
@@ -639,7 +640,7 @@ function load(){
         //$('#eula_iframe')[0].contentDocument.location.replace('https://account.mojang.com/documents/minecraft_eula');
     });
     $('#eula_modal').on('hide.bs.modal', function(e){ $('#eula_agree').off('click'); });
-    
+
     //データ選択
     $('.drag_area').bind('drop', function(e){
         e.preventDefault();
@@ -674,7 +675,7 @@ function load(){
             else load_data(path.dirname(files[0]));
         });
     });
-    
+
     //不具合報告
     $('#report_type_select').click(function(event){
         if ($('#report_type').text().trim() === '不具合報告(ポート開放)'){
@@ -722,7 +723,7 @@ function menu(){
     }
     else p = false;
     if ($(window).width() > 1380) p = true;
-    
+
     if ($('#menu').data('show') && p){
         $('#menu_button').css({'background-color': '#555'});
         $('#menu_title').css('color', 'white');
@@ -747,7 +748,7 @@ function start_server(id){
         dialog.showMessageBox(browserWindow.getFocusedWindow(), { title: 'サーバーを起動できません', type: 'error', message: 'ファイル/フォルダーが見つかりません', detail: 'プロファイルの設定を見直してください', buttons: ['OK'] });
         return;
     }
-    try { logs[id].clear().draw(false); } 
+    try { logs[id].clear().draw(false); }
     catch (e){
         logs[id] = $('#' + id + '_log').DataTable({ 'info': false, 'ordering': false, 'scrollY': '10000px', 'scrollCollapse': true, 'paging': true, 'pagingType': 'numbers', 'pageLength': 300, 'lengthChange': false });
         resize();
@@ -770,7 +771,7 @@ function start_server(id){
     nopeoples[id] = setInterval('nopeople_timer("' + id + '")', 1000);
     if (!fs.existsSync(dir(p)))
         fs.mkdirSync(dir(p));
-        
+
     function dir(p){
         if (settings.backup_dir_bool) return settings.backup_dir + slash + p.id;
         else return p.folder + slash + 'backup';
@@ -899,7 +900,7 @@ function add_line(id, text){
             $('#' + id + '_restart_button').prop('disabled', false);
             $('.' + id + '_status_color').removeClass('warning').removeClass('danger').addClass('success');
             backup(id);
-        } 
+        }
         else if (e.indexOf('You need to agree to the EULA in order to run the server. Go to eula.txt for more info.') > -1){
             $('#eula_agree').click(function(){
                 $('#eula_modal').modal('hide');
@@ -907,7 +908,7 @@ function add_line(id, text){
                 $(this).off('click');
             });
             $('#eula_modal').modal('show');
-        } 
+        }
         else if (e.indexOf('Starting Minecraft server on') > -1){
             if (profiles[id].upnp) port_open(id, parseInt(e.substr(e.indexOf(':', index + 1) + 1)))
         }
@@ -918,7 +919,7 @@ function add_line(id, text){
         $('#' + id + '_players').append('<mark class="' + id + '_' + name + '">' + name + '</mark>');
         //$('#' + id + '_status_players').append('<mark class="' + id + '_' + name + '">' + name + '</mark>');
         players[id].push(name);
-    } 
+    }
     else if (e.indexOf('lost connection') > -1){
         var index_ = e.indexOf('lost connection', index);
         $('.' + id + '_' + e.slice(index + 2, index_ - 1)).remove();
@@ -928,7 +929,7 @@ function add_line(id, text){
             nopeoples[id] = setInterval('nopeople_timer("' + id + '")', 1000);
         }
     }
-    
+
     function talk(id, text){
         if (players[id] === undefined) return false;
         var flag = false;
@@ -951,7 +952,7 @@ function port_open(id, port_num){
             });
             return;
         }
-        if (id !== undefined) port[id].gateway_ip = gateway_ip; 
+        if (id !== undefined) port[id].gateway_ip = gateway_ip;
         var local_ip = [];
         var interfaces = require('os').networkInterfaces();
         for (var dev in interfaces)
@@ -1011,7 +1012,7 @@ function port_check(id, port_num){
             }
         }
     }
-    
+
     if (id === undefined) $('#port_check_manual').text('お待ちください...').prop('disabled', true);;
     $.ajax({
         url: 'http://xperd.net/tools/ams/port.php?port=' + port_num
@@ -1074,7 +1075,7 @@ function load_data(directory){
         if ((world === 0 && all === 0) || world === all){
             dialog.showMessageBox(browserWindow.getFocusedWindow(), { title: 'エラー', type: 'error', message: '非対応ファイルです', detail: 'ファイルをご確認ください。', buttons: ['OK'] });
             return;
-        } 
+        }
         else if (world > all)d_ = path.dirname(directory);
         else d_ = directory;
         $('#profile_modal').modal('show');
@@ -1221,7 +1222,7 @@ function create_detail(extra){
         });
         ipc.send('load_data', e);
     }
-    
+
     function un_to(value){
         if (value === undefined) return '';
         else return value;
@@ -1301,11 +1302,11 @@ function start_download(id, ver, mode, latest, per){
     var url = '';
     var file = '';
     var base_p = 100 - per * 100;
-    
+
     function p(p){
         return base_p + Math.round(p * per);
     }
-    
+
     if (mode === 'Vanila'){
         url = 'https://s3.amazonaws.com/Minecraft.Download/versions/' + ver + '/minecraft_server.' + ver + '.jar';
         file = 'minecraft_server.' + ver + '.jar';
@@ -1472,11 +1473,11 @@ function open_directry(d){
 //バージョン比較
 function versionCompare(v1, v2, options){
     var lexicographical = options && options.lexicographical
-      , 
+      ,
     zeroExtend = options && options.zeroExtend
-      , 
+      ,
     v1parts = v1.split('.')
-      , 
+      ,
     v2parts = v2.split('.');
     function isValidPart(x){
         return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
