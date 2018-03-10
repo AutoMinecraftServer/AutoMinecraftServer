@@ -101,7 +101,7 @@
         <input id="min_memory_text" type="text" class="form-control input-sm right-button" placeholder="" value="512MB"></dd>
         <dt>オプション : </dt><dd><label><input id="upnp_check" type="checkbox"> UPnPによるポート開放</label><br>
         <div class="row"><div class="col-xs-5"><label><input id="backup_check" type="checkbox"> 自動バックアップ</label></div><div class="col-xs-2" style="padding: 0 1px"><input id="backup_minute" type="number" min="1" class="form-control input-sm" value="10"></div><div class="col-xs-1" style="padding: 0 1px"> 分毎</div><div class="col-xs-2" style="padding: 0 1px"><input id="backup_count" type="number" min="1" class="form-control input-sm" value="5"></div><div class="col-xs-2" style="padding: 0 1px"> 個まで</div></div></dd>
-        <dt>Minecraftのバージョン : </dt>
+        <dt>バージョン : </dt>
         <dd style="display: none;"><label><input id="change_check" type="checkbox" onchange="if ($(this).prop('checked')) $('#version').parent().parent().show(); else  $('#version').parent().parent().hide();"> Minecraftバージョンを変更</label></dd>
         <dd style="display: none;"><div class="dropdown" style="display: inline-block;"><a class="btn btn-default dropdown-toggle" id="version" data-toggle="dropdown">選択<span class="caret"></span></a>
         <ul id="version_body" class="dropdown-menu" role="menu" aria-labelledby="version" style="height: 200px; overflow-x: hidden;">
@@ -302,13 +302,13 @@
         </table>
         </div>
         <div class="tab-pane in" id="log_content" style="height:100%; overflow:scroll;">
-                    
+
         </div>
         <div class="tab-pane in" id="command_content" style="height:100%; overflow:scroll;">
-                    
+
         </div>
         <div class="tab-pane in" id="backup_content" style="height:100%; overflow:scroll;">
-                    
+
         </div>
         </div>
     </div>
