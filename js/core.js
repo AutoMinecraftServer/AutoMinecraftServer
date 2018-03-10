@@ -1313,7 +1313,7 @@ function start_download(id, ver, mode, latest, per){
         file = 'minecraft_server.' + ver + '.jar';
         require('request-progress')(require('request')(url), { throttle: 200 })
         .on('progress', function(state){
-            percent(p(state.percent * 100), 'ダウンロード中... 残り' + state.time.remaining + '秒(' + p(state.percent * 100) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
+            percent(p(state.percent * 100), 'ダウンロード中... 残り' + round(state.time.remaining) + '(' + p(state.percent * 100) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
         })
         .on('error', function(err){ })
         .pipe(fs.createWriteStream(profiles[id].folder + slash + file))
@@ -1345,7 +1345,7 @@ function start_download(id, ver, mode, latest, per){
                 percent(p(5), 'ダウンロード開始中...(' + p(5) + '%)');
                 require('request-progress')(require('request')(url), { throttle: 200 })
                 .on('progress', function(state){
-                    percent(p(Math.round(5 + state.percent * 100 * 0.1)), 'ダウンロード中... 残り' + state.time.remaining + '秒(' + p(Math.round(5 + state.percent * 100 * 0.1)) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
+                    percent(p(Math.round(5 + state.percent * 100 * 0.1)), 'ダウンロード中... 残り' + round(state.time.remaining) + '(' + p(Math.round(5 + state.percent * 100 * 0.1)) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
                 })
                 .on('error', function(err){})
                 .pipe(fs.createWriteStream(profiles[id].folder + slash + file))
@@ -1506,4 +1506,15 @@ function versionCompare(v1, v2, options){
     if (v1parts.length !== v2parts.length)
         return -1;
     return 0;
+}
+
+function round(sec) {
+    if (typeof sec != 'number') return '残り時間計測中'
+    var ms = sec * 1000
+    var unit = ['時間', '分', '秒']
+    var time = [3600000, 60000, 1000]
+    var v = 2
+    if (ms > time[1]) v = 1
+    if (ms > time[0]) v = 0
+    return Math.round(ms / time[v]) + unit[v]
 }
