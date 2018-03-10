@@ -9,8 +9,6 @@ var dpi = $('#dpi').outerHeight();
 //$('#dpi').remove();
 $('body').css('zoom', dpi / 72 * 100 + '%');
 
-var remote, exec, fs, path, ipc, dialog, browserWindow, app, shell, del, zip, encoding, upnp;
-
 var load_end_count = 0;
 var profiles = {};
 //プロファイル
@@ -44,677 +42,673 @@ var base_dir = '';
 
 function resize(){ $(window).trigger('resize'); }
 
-$(function(){ setTimeout(load, 10); });
-
 function ver(e){
     $('#version').html($(e).text() + ' <span class="caret"></span>');
 }
 
-function load(){
-    var electron = require('electron');
-    shell = electron.shell;
-    remote = electron.remote;
-    ipc = electron.ipcRenderer;//require('ipc');
-    dialog = remote.dialog;//remote.require('dialog');
-    browserWindow = remote.BrowserWindow;//remote.require('browser-window');
-    app = remote.app;
-    exec = require('child_process').spawn;
-    fs = require('fs');
-    path = require('path');
-    del = require('del');
-    encoding = require('encoding-japanese');
-    upnp = require('nat-upnp').createClient();
+var electron = require('electron');
+var shell = electron.shell;
+var remote = electron.remote;
+var ipc = electron.ipcRenderer;//require('ipc');
+var dialog = remote.dialog;//remote.require('dialog');
+var browserWindow = remote.BrowserWindow;//remote.require('browser-window');
+var app = remote.app;
+var exec = require('child_process').spawn;
+var fs = require('fs');
+var path = require('path');
+var del = require('del');
+var encoding = require('encoding-japanese');
+var upnp = require('nat-upnp').createClient();
 
-    //右クリックメニュー
-    $(document).on('contextmenu', function(e){
-        var text = window.getSelection().toString();
-        var b = (text !== '')? true : false;
-        var text_ = (text.length > 15)? '...' : '';
-        if ($(e.target).get(0).tagName === 'INPUT'){
-            if ($(e.target).prop('disabled') === true) return;
-            remote.Menu.buildFromTemplate([
-                {label: '切り取り', accelerator: 'CmdOrCtrl+X', role: 'cut', enabled: b},
-                {label: 'コピー', accelerator: 'CmdOrCtrl+C', role: 'copy', enabled: b},
-                {label: '貼り付け', accelerator: 'CmdOrCtrl+V', role: 'paste'},
-                {label: 'すべて選択', accelerator: 'CmdOrCtrl+A', role: 'selectall'},
-                {type: 'separator'},
-                {label: '「' + text.slice(0, 15) + text_ + '」を検索', enabled: b, click: function(){
-                    shell.openExternal('http://google.co.jp/search?q=' + encodeURIComponent(text))
-                }},
-                {type: 'separator'},
-                {label: '取消', accelerator: 'CmdOrCtrl+Z', role: 'undo'},
-                {label: 'やり直し', accelerator: 'CmdOrCtrl+Y', role: 'redo'}
-            ]).popup(remote.getCurrentWindow());
-        } else if ($(e.target).get(0).tagName === 'MARK'){
-            var name = $(e.target).text();
-            var id = $(e.target).attr('class').slice(0, $(e.target).attr('class').indexOf('_'));
-            $('#copy_player').remove();
-            $('body').append('<button id="copy_player" data-clipboard-text="' + name + '" style="display:none;"></button>');
-            new Clipboard('#copy_player');
-            remote.Menu.buildFromTemplate([
-                {label: '名前をコピー', click: function(){ $('#copy_player').trigger('click'); }},
-                {type: 'separator'},
-                {label: '「' + name + '」をBAN', click: function(){ send_command(id, 'ban ' + name); }},
-                {label: '「' + name + '」のIPをBAN', click: function(){ send_command(id, 'ban-ip ' + name); }},
-                {label: '「' + name + '」にOP権限を与える', click: function(){ send_command(id, 'op ' + name); }},
-                {label: '「' + name + '」にOP権限を剥奪', click: function(){ send_command(id, 'deop ' + name); }},
-                {type: 'separator'},
-                {label: '「' + name + '」を退出させる', click: function(){ send_command(id, 'kick ' + name); }},
-                {label: '「' + name + '」をキル', click: function(){ send_command(id, 'kill ' + name); }},
-                {label: '「' + name + '」のアイテムを削除', click: function(){ send_command(id, 'clear ' + name); }}
-            ]).popup(remote.getCurrentWindow());
-        } else if (b)
-            remote.Menu.buildFromTemplate([
-                {label: 'コピー', accelerator: 'CmdOrCtrl+C', role: 'copy', visible: b},
-                {label: '「' + text.slice(0, 15) + text_ + '」を検索', enabled: b, click: function(){
-                    shell.openExternal('http://google.co.jp/search?q=' + encodeURIComponent(text))
-                }}
-            ]).popup(remote.getCurrentWindow());
-    });
-    //使用するエクスプローラー判定
-    if (process.platform !== 'win32'){
-        var p = exec('which', ['nautilus']);
-        p.on('exit', function(code){ if (code === 0) open_d = 'nautilus'; });
-        var p_ = exec('which', ['thunar']);
-        p_.on('exit', function(code){ if (code === 0) open_d = 'thunar'; });
-        var p__ = exec('which', ['pcmanfm']);
-        p__.on('exit', function(code){ if (code === 0) open_d = 'pcmanfm'; });
+//右クリックメニュー
+$(document).on('contextmenu', function(e){
+    var text = window.getSelection().toString();
+    var b = (text !== '')? true : false;
+    var text_ = (text.length > 15)? '...' : '';
+    if ($(e.target).get(0).tagName === 'INPUT'){
+        if ($(e.target).prop('disabled') === true) return;
+        remote.Menu.buildFromTemplate([
+            {label: '切り取り', accelerator: 'CmdOrCtrl+X', role: 'cut', enabled: b},
+            {label: 'コピー', accelerator: 'CmdOrCtrl+C', role: 'copy', enabled: b},
+            {label: '貼り付け', accelerator: 'CmdOrCtrl+V', role: 'paste'},
+            {label: 'すべて選択', accelerator: 'CmdOrCtrl+A', role: 'selectall'},
+            {type: 'separator'},
+            {label: '「' + text.slice(0, 15) + text_ + '」を検索', enabled: b, click: function(){
+                shell.openExternal('http://google.co.jp/search?q=' + encodeURIComponent(text))
+            }},
+            {type: 'separator'},
+            {label: '取消', accelerator: 'CmdOrCtrl+Z', role: 'undo'},
+            {label: 'やり直し', accelerator: 'CmdOrCtrl+Y', role: 'redo'}
+        ]).popup(remote.getCurrentWindow());
+    } else if ($(e.target).get(0).tagName === 'MARK'){
+        var name = $(e.target).text();
+        var id = $(e.target).attr('class').slice(0, $(e.target).attr('class').indexOf('_'));
+        $('#copy_player').remove();
+        $('body').append('<button id="copy_player" data-clipboard-text="' + name + '" style="display:none;"></button>');
+        new Clipboard('#copy_player');
+        remote.Menu.buildFromTemplate([
+            {label: '名前をコピー', click: function(){ $('#copy_player').trigger('click'); }},
+            {type: 'separator'},
+            {label: '「' + name + '」をBAN', click: function(){ send_command(id, 'ban ' + name); }},
+            {label: '「' + name + '」のIPをBAN', click: function(){ send_command(id, 'ban-ip ' + name); }},
+            {label: '「' + name + '」にOP権限を与える', click: function(){ send_command(id, 'op ' + name); }},
+            {label: '「' + name + '」にOP権限を剥奪', click: function(){ send_command(id, 'deop ' + name); }},
+            {type: 'separator'},
+            {label: '「' + name + '」を退出させる', click: function(){ send_command(id, 'kick ' + name); }},
+            {label: '「' + name + '」をキル', click: function(){ send_command(id, 'kill ' + name); }},
+            {label: '「' + name + '」のアイテムを削除', click: function(){ send_command(id, 'clear ' + name); }}
+        ]).popup(remote.getCurrentWindow());
+    } else if (b)
+        remote.Menu.buildFromTemplate([
+            {label: 'コピー', accelerator: 'CmdOrCtrl+C', role: 'copy', visible: b},
+            {label: '「' + text.slice(0, 15) + text_ + '」を検索', enabled: b, click: function(){
+                shell.openExternal('http://google.co.jp/search?q=' + encodeURIComponent(text))
+            }}
+        ]).popup(remote.getCurrentWindow());
+});
+//使用するエクスプローラー判定
+if (process.platform !== 'win32'){
+    var p = exec('which', ['nautilus']);
+    p.on('exit', function(code){ if (code === 0) open_d = 'nautilus'; });
+    var p_ = exec('which', ['thunar']);
+    p_.on('exit', function(code){ if (code === 0) open_d = 'thunar'; });
+    var p__ = exec('which', ['pcmanfm']);
+    p__.on('exit', function(code){ if (code === 0) open_d = 'pcmanfm'; });
+}
+//作業ディレクトリ
+if (process.platform === 'win32') base_dir = path.dirname(fs.realpathSync('./')) + slash;
+else base_dir = path.dirname(fs.realpathSync('')) + slash;
+//ウィンドウ設定
+$('#report_modal, #manage_modal, #profile_modal, #settings_modal, #port_modal').draggable({handle: '.modal-header'});
+$('#report_modal, #manage_modal, #profile_modal').resizable();
+//バージョン表示
+$('.update').text('バージョン:' + app.getVersion());
+//初期設定
+$.fn.bootstrapSwitch.defaults.size = 'mini';
+$.fn.bootstrapSwitch.defaults.onText = '有効';
+$.fn.bootstrapSwitch.defaults.offText = '無効';
+$.fn.bootstrapSwitch.defaults.handleWidth = 50;
+$('[name="toggle"]').bootstrapSwitch();
+//リサイズイベント
+$(window).on('resize', function(){
+    var h = ($(window).height() / (dpi / 72))// - 20;
+    $('#main').height(h + 'px');
+    $.each(profiles, function(i, e){ $('#' + e.id + '_content').find('.dataTables_scrollBody').height(h - 265 + 'px'); });
+    if ($(window).width() > 1380 && $('#menu').data('show')) menu();
+});
+//$.fn.dataTable.moment('YYYY/MM//DD HH:mm:ss.SSS');
+//最新情報読み込み
+var org = 'https://raw.githubusercontent.com/AutoMinecraftServer/AutoMinecraftServer/';
+$.ajax({ url: org + 'master/parts/info.html', type: 'GET',
+    success: function(data){ $('.info').html(data); }, error: function(xhr, status, err){} });
+//Minecraftバージョン情報取得
+$.ajax({ url: org + 'master/parts/versions.html', type: 'GET',
+    success: function(data){ $('#version_body').html(data); }, error: function(xhr, status, err){} });
+/*$.ajax({
+    url: 'http://xperd.net/tools/ams/version.txt?',
+    type: 'GET',
+    success: function(data){
+        if (versionCompare(data, app.getVersion()) === 1)
+            $('#update_modal').modal('show');
+    },
+    error: function(xhr, status, err){}
+});*/
+
+//プロファイル、設定ファイル読み込み
+fs.readFile(base_dir + 'profile.ams', 'utf8', function(e, t){
+    if (e){
+        load_end(true);
+        return;
     }
-    //作業ディレクトリ
-    if (process.platform === 'win32') base_dir = path.dirname(fs.realpathSync('./')) + slash;
-    else base_dir = path.dirname(fs.realpathSync('')) + slash;
-    //ウィンドウ設定
-    $('#report_modal, #manage_modal, #profile_modal, #settings_modal, #port_modal').draggable({handle: '.modal-header'});
-    $('#report_modal, #manage_modal, #profile_modal').resizable();
-    //バージョン表示
-    $('.update').text('バージョン:' + app.getVersion());
-    //初期設定
-    $.fn.bootstrapSwitch.defaults.size = 'mini';
-    $.fn.bootstrapSwitch.defaults.onText = '有効';
-    $.fn.bootstrapSwitch.defaults.offText = '無効';
-    $.fn.bootstrapSwitch.defaults.handleWidth = 50;
-    $('[name="toggle"]').bootstrapSwitch();
-    //リサイズイベント
-    $(window).on('resize', function(){
-        var h = ($(window).height() / (dpi / 72))// - 20;
-        $('#main').height(h + 'px');
-        $.each(profiles, function(i, e){ $('#' + e.id + '_content').find('.dataTables_scrollBody').height(h - 265 + 'px'); });
-        if ($(window).width() > 1380 && $('#menu').data('show')) menu();
+    profiles = JSON.parse(t);
+    if (Object.keys(profiles).length === 0){
+        load_end(true);
+        return;
+    }
+    $.each(profiles, function(i, p){
+        profile_ready(p.id);
     });
-    //$.fn.dataTable.moment('YYYY/MM//DD HH:mm:ss.SSS');
-    //最新情報読み込み
-    var org = 'https://raw.githubusercontent.com/AutoMinecraftServer/AutoMinecraftServer/';
-    $.ajax({ url: org + 'master/parts/info.html', type: 'GET',
-        success: function(data){ $('.info').html(data); }, error: function(xhr, status, err){} });
-    //Minecraftバージョン情報取得
-    $.ajax({ url: org + 'master/parts/versions.html', type: 'GET',
-        success: function(data){ $('#version_body').html(data); }, error: function(xhr, status, err){} });
-    /*$.ajax({
-        url: 'http://xperd.net/tools/ams/version.txt?',
-        type: 'GET',
-        success: function(data){
-            if (versionCompare(data, app.getVersion()) === 1)
-                $('#update_modal').modal('show');
-        },
-        error: function(xhr, status, err){}
-    });*/
-
-    //プロファイル、設定ファイル読み込み
-    fs.readFile(base_dir + 'profile.ams', 'utf8', function(e, t){
-        if (e){
-            load_end(true);
-            return;
-        }
-        profiles = JSON.parse(t);
-        if (Object.keys(profiles).length === 0){
-            load_end(true);
-            return;
-        }
-        $.each(profiles, function(i, p){
-            profile_ready(p.id);
-        });
-        //reload_profile();
-        create_detail(null);
-    });
-    fs.readFile(base_dir + 'settings.ams', 'utf8', function(e, t){
-        if (!e){
-            var s = JSON.parse(t);
-            for (var name in s) settings[name] = s[name];
-        }
-        ipc.send('settings', settings);
-    });
-    //アップデート確認
-    ipc.on('update', function(e, a){
-        var set = (msg, title) => $('.update').append($('<span>').text(msg).attr('title', title));
-        if (a === 'update-not-available') set('[最新]', '');
-        if (a === 'update-available') set('[アップデートあり]', '手動で更新でしてください');
-        if (a === 'update-ready') set('[アップデート準備完了]', '次回起動時に更新されます');
-    });
-    //プロファイル設定画面
-    $('#profile_modal').on('show.bs.modal', function(event){
-        var a = profiles[$(event.relatedTarget).parent().data('id')];
-        if (a === undefined){
-            a = { id: uuid(), name: '', folder: '', jar: '', max_memory: '1024', min_memory: '512', upnp: true, backup: true,
-                backup_minute: '10', backup_count: '5' };
-            $('#folder_input, #jar_input').attr('placeholder', '空欄でも可');
-            $('#change_check').parent().parent().hide();
-            $('#version').parent().parent().show();
-            if ($(this).data('zip') !== undefined && $(this).data('zip') !== ''){
-                $(this).data('zip_bool', true);
-                $('#zip_explain').show();
-                $('#jar_input, #jar_select').prop('disabled', true);
-                if ($(this).data('type') === 'world') $('#jar_input').attr('placeholder', 'ダウンロードのみ');
-                else if ($(this).data('type') === 'all') $('#jar_input').attr('placeholder', 'Zipから読み込み/ダウンロードのみ');
-            }
-        }
-        else {
-            $('#change_check').parent().parent().show();
-            $('#version').parent().parent().hide();
-            $('#folder_input, #jar_input').attr('placeholder', '');
-        }
-        $('#version').removeClass('btn-danger');
-        $('.has-error').removeClass('has-error');
-        $('#id').val(a.id);
-        $('#name').val(a.name);
-        $('#folder_input').val(a.folder);
-        $('#jar_input').val(a.jar);
-        $('#max_memory_text').val(a.max_memory + 'MB');
-        $('#min_memory_text').val(a.min_memory + 'MB');
-        $('#upnp_check').prop('checked', a.upnp);
-        $('#backup_check').prop('checked', a.backup);
-        $('#backup_minute').val(a.backup_minute);
-        $('#backup_count').val(a.backup_count);
-    });
-    $('#profile_modal').on('hide.bs.modal', function(e){
-        if (profile_close)
-            e.preventDefault()
-        $(this).data('zip', '').data('zip_bool', '').data('type', '').data('base', '').data('count', '');
-        $('#zip_explain').hide();
-        $('#jar_input_div').show();
-        $('#jar_choice_div').hide();
-        $('#jar_input, #jar_select').prop('disabled', false);
-        $('#jar_choice').html('必ず選択してください<span class="caret"></span>');
-        $('#jar_list').html('');
-
-        $('#change_check').prop('checked', false);
+    //reload_profile();
+    create_detail(null);
+});
+fs.readFile(base_dir + 'settings.ams', 'utf8', function(e, t){
+    if (!e){
+        var s = JSON.parse(t);
+        for (var name in s) settings[name] = s[name];
+    }
+    ipc.send('settings', settings);
+});
+//アップデート確認
+ipc.on('update', function(e, a){
+    var set = (msg, title) => $('.update').append($('<span>').text(msg).attr('title', title));
+    if (a === 'update-not-available') set('[最新]', '');
+    if (a === 'update-available') set('[アップデートあり]', '手動で更新でしてください');
+    if (a === 'update-ready') set('[アップデート準備完了]', '次回起動時に更新されます');
+});
+//プロファイル設定画面
+$('#profile_modal').on('show.bs.modal', function(event){
+    var a = profiles[$(event.relatedTarget).parent().data('id')];
+    if (a === undefined){
+        a = { id: uuid(), name: '', folder: '', jar: '', max_memory: '1024', min_memory: '512', upnp: true, backup: true,
+            backup_minute: '10', backup_count: '5' };
+        $('#folder_input, #jar_input').attr('placeholder', '空欄でも可');
         $('#change_check').parent().parent().hide();
-        $('#version').parent().parent().hide();
-        $('#progress').parent().hide();
-        $('#progress_text').hide();
-        $('#profile_modal_close').prop('disabled', false);
-        $('#profile_modal_body *').prop('disabled', false);
-        $('#profile_modal_footer').children().prop('disabled', false);
-        $('#progress').width('0%');
-        $('#progress_text').text('処理中...(0%)');
-    });
-    $('#profile_save').click(function(){
-        var error = false;
-        var p = profiles[$('#id').val()] !== undefined;
-        if (p){
-            //名前変更なし
-            if ($('#name').val() === profiles[$('#id').val()].name)
-                error = false;
-            //名前なし
-            else if ($('#name').val() === ''){
-                $('#name').parent().addClass('has-error');
-                error = true;
-            }
-            //名前重複
-            else
-                $.each(profiles, function(i, e){
-                    if ($('#name').val() === e.name){
-                        $('#name').parent().addClass('has-error');
-                        error = true;
-                    }
-                });
-            //フォルダーチェック
-            if (!fs.existsSync($('#folder_input').val()) || path.extname($('#folder_input').val()) !== ''){
-                $('#folder_input').parent().addClass('has-error');
-                error = true;
-            }
-            //Jarチェック
-            if (!fs.existsSync($('#jar_input').val()) || path.extname($('#jar_input').val()) !== '.jar'){
-                $('#jar_input').parent().addClass('has-error');
-                error = true;
-            }
-            if ($('#version').text() === '選択' && $('#version').parent().parent().css('display') !== 'none'){
-                $('#version').addClass('btn-danger');
-                error = true;
-            }
+        $('#version').parent().parent().show();
+        if ($(this).data('zip') !== undefined && $(this).data('zip') !== ''){
+            $(this).data('zip_bool', true);
+            $('#zip_explain').show();
+            $('#jar_input, #jar_select').prop('disabled', true);
+            if ($(this).data('type') === 'world') $('#jar_input').attr('placeholder', 'ダウンロードのみ');
+            else if ($(this).data('type') === 'all') $('#jar_input').attr('placeholder', 'Zipから読み込み/ダウンロードのみ');
         }
-        else {
-            //名前重複(新規)
+    }
+    else {
+        $('#change_check').parent().parent().show();
+        $('#version').parent().parent().hide();
+        $('#folder_input, #jar_input').attr('placeholder', '');
+    }
+    $('#version').removeClass('btn-danger');
+    $('.has-error').removeClass('has-error');
+    $('#id').val(a.id);
+    $('#name').val(a.name);
+    $('#folder_input').val(a.folder);
+    $('#jar_input').val(a.jar);
+    $('#max_memory_text').val(a.max_memory + 'MB');
+    $('#min_memory_text').val(a.min_memory + 'MB');
+    $('#upnp_check').prop('checked', a.upnp);
+    $('#backup_check').prop('checked', a.backup);
+    $('#backup_minute').val(a.backup_minute);
+    $('#backup_count').val(a.backup_count);
+});
+$('#profile_modal').on('hide.bs.modal', function(e){
+    if (profile_close)
+        e.preventDefault()
+    $(this).data('zip', '').data('zip_bool', '').data('type', '').data('base', '').data('count', '');
+    $('#zip_explain').hide();
+    $('#jar_input_div').show();
+    $('#jar_choice_div').hide();
+    $('#jar_input, #jar_select').prop('disabled', false);
+    $('#jar_choice').html('必ず選択してください<span class="caret"></span>');
+    $('#jar_list').html('');
+
+    $('#change_check').prop('checked', false);
+    $('#change_check').parent().parent().hide();
+    $('#version').parent().parent().hide();
+    $('#progress').parent().hide();
+    $('#progress_text').hide();
+    $('#profile_modal_close').prop('disabled', false);
+    $('#profile_modal_body *').prop('disabled', false);
+    $('#profile_modal_footer').children().prop('disabled', false);
+    $('#progress').width('0%');
+    $('#progress_text').text('処理中...(0%)');
+});
+$('#profile_save').click(function(){
+    var error = false;
+    var p = profiles[$('#id').val()] !== undefined;
+    if (p){
+        //名前変更なし
+        if ($('#name').val() === profiles[$('#id').val()].name)
+            error = false;
+        //名前なし
+        else if ($('#name').val() === ''){
+            $('#name').parent().addClass('has-error');
+            error = true;
+        }
+        //名前重複
+        else
             $.each(profiles, function(i, e){
                 if ($('#name').val() === e.name){
                     $('#name').parent().addClass('has-error');
                     error = true;
                 }
             });
-            //フォルダーチェック(新規)
-            if (!fs.existsSync($('#folder_input').val()) && $('#folder_input').val() !== ''){
-                $('#folder_input').parent().addClass('has-error');
-                error = true;
-            }
-            //Jarチェック(新規)
-            if ($('#version').text() === '選択' && !fs.existsSync($('#jar_input').val()) && $('#jar_input').val().slice(0, 2) !== '..' && $('#jar_choice').text().trim() === '必ず選択してください'){
-                if ($('#version').parent().parent().css('display') === 'none') $('#jar_input').parent().addClass('has-error');
-                else $('#version').addClass('btn-danger');
-                error = true;
-            }
+        //フォルダーチェック
+        if (!fs.existsSync($('#folder_input').val()) || path.extname($('#folder_input').val()) !== ''){
+            $('#folder_input').parent().addClass('has-error');
+            error = true;
         }
-        if (error) return;
-        var a = {};
-        a.id = $('#id').val();
-        a.name = $('#name').val();
-        a.folder = $('#folder_input').val();
-        a.jar = $('#jar_input').val();
-        a.max_memory = $('#max_memory_text').val().slice(0, -2);
-        a.min_memory = $('#min_memory_text').val().slice(0, -2);
-        a.upnp = $('#upnp_check').prop('checked');
-        a.backup = $('#backup_check').prop('checked');
-        a.backup_minute = $('#backup_minute').val();
-        a.backup_count = $('#backup_count').val();
-        if (!p){
-            //フォルダ自動指定
-            if ($('#folder_input').val() === ''){
-                var name = $('#name').val().replace(/:/g, '_').replace(/;/g, '_').replace(/\\/g, '_').replace(slash, '_').replace(/\|/g, '_').replace(/,/g, '_').replace(/\*/g, '_').replace(/\?/g, '_').replace(/"/g, '_').replace(/</g, '_').replace(/>/g, '_');
-                a.folder = path.dirname(fs.realpathSync('./')) + slash + name;
-                try { fs.mkdirSync(a.folder); } catch(ex){}
-                $('#folder_input').val(a.folder);
-            }
-            profiles[a.id] = a;
-            fs.writeFile(base_dir + 'profile.ams', JSON.stringify(profiles), (error) => { /* handle error */ });
-            if ($('#profile_modal').data('zip_bool')){
-                if ($('#jar_input').val() !== ''){
-                    a.jar = a.jar.replace('..' + slash, $('#folder_input').val() + slash);
-                    $('#jar_input').val(a.jar);
-                    progress(a.id, undefined, { data: $('#profile_modal').data('zip'), type: $('#profile_modal').data('type'), base: $('#profile_modal').data('base'), count: $('#profile_modal').data('count') });
-                }
-                else if ($('#jar_choice').text().trim() !== '必ず選択してください'){
-                    a.jar = $('#folder_input').val() + slash + $('#jar_choice').text().trim();
-                    $('#jar_input_div').show();
-                    $('#jar_choice_div').hide();
-                    $('#jar_input').val(a.jar);
-                    progress(a.id, undefined, { data: $('#profile_modal').data('zip'), type: $('#profile_modal').data('type'), base: $('#profile_modal').data('base'), count: $('#profile_modal').data('count') });
-                }
-                else {
-                    var index = $('#version').text().indexOf(' ');
-                    progress(a.id, { ver: $('#version').text().slice(index + 1, -1), type: $('#version').text().slice(0, index), latest: $('#latest_check').prop('checked') }, { data: $('#profile_modal').data('zip'), type: $('#profile_modal').data('type'), base: $('#profile_modal').data('base'), count: $('#profile_modal').data('count') });
-                }
-            }
-            else {
-                if (fs.existsSync($('#jar_input').val())){
-                    $('#profile_modal').modal('hide');
-                    profile_ready(a.id, true);
-                    //reload_profile();
-                    create_detail(a.id);
-                }
-                else {
-                    var index = $('#version').text().indexOf(' ');
-                    progress(a.id, { ver: $('#version').text().slice(index + 1, -1), type: $('#version').text().slice(0, index), latest: $('#latest_check').prop('checked') });
-                }
-            }
+        //Jarチェック
+        if (!fs.existsSync($('#jar_input').val()) || path.extname($('#jar_input').val()) !== '.jar'){
+            $('#jar_input').parent().addClass('has-error');
+            error = true;
         }
-        else {
-            profiles[a.id] = a;
-            fs.writeFile(base_dir + 'profile.ams', JSON.stringify(profiles), (error) => { /* handle error */ });
-            if ($('#change_check').prop('checked')){
-                    var index = $('#version').text().indexOf(' ');
-                    progress(a.id, { ver: $('#version').text().slice(index + 1, -1), type: $('#version').text().slice(0, index), latest: $('#latest_check').prop('checked') });
-            }
-            else {
-                $('#profile_modal').modal('hide');
-                profile_ready(a.id, true);
-                create_detail(a.id);
-            }
-        }
-    });
-    $('#max_memory_slider').on('input', function(){
-        if (parseInt($('#min_memory_slider').val()) > parseInt($(this).val())) $(this).val($('#min_memory_slider').val());
-        $('#max_memory_text').val($(this).val() * 128 + 'MB');
-    });
-    $('#min_memory_slider').on('input', function(e){
-        if (parseInt($('#max_memory_slider').val()) < parseInt($(this).val())) $(this).val($('#max_memory_slider').val());
-        $('#min_memory_text').val($(this).val() * 128 + 'MB');
-    });
-    $('#name, #folder_input, #jar_input').keyup(function(){ $(this).parent().removeClass('has-error'); });
-    $('.dropdown-menu li a').click(function(){
-        $(this).parents('.dropdown').find('.dropdown-toggle').html($(this).text() + ' <span class="caret"></span>');
-        $(this).parents('.dropdown').find('input[name="dropdown-value"]').val($(this).attr('data-value'));
-        $('#version').removeClass('btn-danger');
-    });
-    $('#jar_select').click(function(){
-        var focusedWindow = browserWindow.getFocusedWindow();
-        dialog.showOpenDialog(focusedWindow, {
-            properties: ['openFile'],
-            filters: [{ name: 'jar', extensions: ['jar'] }]
-        }, function(files){
-            if (files === undefined) return;
-            $('#jar_input').val(files[0]).parent().removeClass('has-error');
-        });
-    });
-    $('#folder_select').click(function(){
-        var focusedWindow = browserWindow.getFocusedWindow();
-        dialog.showOpenDialog(focusedWindow, {
-            properties: ['openDirectory']
-        }, function(directories){
-            if (directories === undefined) return;
-            $('#folder_input').val(directories[0]).parent().removeClass('has-error');
-            if ($('#name').val() === '') $('#name').val(path.basename(directories[0])).parent().removeClass('has-error');
-        });
-    });
-    $('#change_check')
-    //properties画面
-    $('#manage_modal').on('show.bs.modal', function(event){
-        var a = profiles[$(event.relatedTarget).parent().data('id')];
-        ipc.send('load_manage', a);
-        $('#manage_title').text('サーバー/ログ/コマンド履歴/バックアップの管理 - ' + a.name + ' -');
-        var data = '<tr><th>全ての履歴</th><th><button type="button" class="btn btn-danger command_del" data-text="">削除</button></th></tr>';
-        $.each(indices[a.id], function(i, e_){
-            data += '<tr><th>' + e_ + '</th><th><button type="button" class="btn btn-danger command_del" data-text="' + e_ + '">削除</button></th></tr>';
-        });
-        $('#command_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">コマンド</th><th data-sortable="false">操作</th></tr></thead><tbody>' + data + '</tbody></table>');
-        $('.command_del').click(function(event){
-            var text = $(this).data('text');
-            function check(t){
-                if (text === '') return 'すべての履歴を消しますか？';
-                else return '[' + text + ']を履歴から削除しますか？';
-            }
-            dialog.showMessageBox(browserWindow.getFocusedWindow(), {
-                title: 'コマンド履歴削除', type: 'warning', message: check(text), buttons: ['削除', 'キャンセル'], cancelId: -1, defaultId: 1 },
-                function(b){
-                    if (b !== 0) return;
-                    if (text === '' && b === 0){
-                        indices[a.id] = ['achievement', 'ban', 'ban-ip', 'banlist', 'blockdata', 'clear', 'clone', 'debug', 'defaultgamemode', 'deop', 'difficulty', 'effect', 'enchant', 'entitydata', 'execute', 'fill', 'gamemode', 'gamerule', 'give', 'help', 'kick', 'kill', 'list', 'me', 'op', 'pardon', 'pardon-ip', 'particle', 'playsound', 'replaceitem', 'save-all', 'save-off', 'save-on', 'say', 'scoreboard', 'seed', 'setblock', 'setidletimeout', 'setworldspawn', 'spawnpoint', 'spreadplayers', 'stats', 'stop', 'tell', 'tellraw', 'testfor', 'testforblock', 'testforblocks', 'time', 'title', 'toggledownfall', 'tp', 'trigger', 'weather', 'whitelist', 'worldborader', 'xp'];
-                        var data = '<tr><th>すべての履歴</th><th><button type="button" class="btn btn-danger command_del" data-text="">削除</button></th></tr>';
-                        $.each(indices[a.id], function(i, e_){
-                            data += '<tr><th>' + e_ + '</th><th><button type="button" class="btn btn-danger command_del" data-text="' + e_ + '">削除</button></th></tr>';
-                        });
-                        $('#command_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">コマンド</th><th data-sortable="false">操作</th></tr></thead><tbody>' + data + '</tbody></table>');
-                    }
-                    else if (b === 0){
-                        indices[a.id].splice(indices[a.id].indexOf(text), 1);
-                        $(this).parent().parent().remove();
-                    }
-                save_indices(a.id);
-            });
-        });
-    });
-    $('.properties_toggle').on('switchChange.bootstrapSwitch', function(event, state){
-        properties[$(this).attr('id')] = state;
-        ipc.send('save_properties', { location: properties_location, data: properties });
-    });
-    $('.properties_text').change(function(event){
-        properties[$(this).attr('id')] = $(this).val();
-        ipc.send('save_properties', { location: properties_location, data: properties });
-    });
-    $('.properties_drop').click(function(event){
-        var a = $(this).parent().find('.dropdown-toggle');
-        var text = a.text().trim();
-        switch (a.attr('id')){
-            case 'difficulty': properties[a.attr('id')] = ({'ピースフル':'0', 'イージー':'1', 'ノーマル':'2', 'ハード':'3'})[text]; break;
-            case 'gamemode': properties[a.attr('id')] = ({'サバイバル':'0', 'クリエイティブ':'1', 'アドベンチャー':'2', 'スペクテイター':'3'})[text]; break;
-            case 'level-type': properties[a.attr('id')] = ({'通常':'DEFAULT', 'フラット':'FLAT', '大きなバイオーム':'LARGEBIOMES', 'アンプリファイド':'AMPLIFIED', 'カスタマイズ':'CUSTOMIZED'})[text]; break;
-        }
-        ipc.send('save_properties', { location: properties_location, data: properties });
-    });
-    var properties, properties_location;
-    ipc.on('load_properties', function(e, data){
-        if (data === undefined || data === null) return;
-        properties_location = data.location;
-        properties = data.data;
-        for (var key in properties)
-        {
-            var val = properties[key];
-            switch (key){
-                case 'difficulty':
-                    $('#difficulty').html((['ピースフル', 'イージー', 'ノーマル', 'ハード'])[val] + ' <span class="caret"></span>');
-                    break;
-                case 'gamemode':
-                    $('#gamemode').html((['サバイバル', 'クリエイティブ', 'アドベンチャー', 'スペクテイター'])[val] + ' <span class="caret"></span>');
-                    break;
-                case 'level-type':
-                    $('#level-type').html(({'DEFAULT': '通常', 'FLAT': 'フラット', 'LARGEBIOMES': '大きなバイオーム', 'AMPLIFIED': 'アンプリファイド', 'CUSTOMIZED': 'カスタマイズ'})[val] + ' <span class="caret"></span>');
-                    break;
-                default:
-                    if ($('#' + key).attr('name') === 'toggle'){
-                        if (val === 'true') $('#' + key).bootstrapSwitch('state', true);
-                        else if (val === 'false') $('#' + key).bootstrapSwitch('state', false);
-                    } else $('#' + key).val(val);
-            }
-        }
-        resize();
-    });
-    ipc.on('load_logs', function(e, data){
-        var html = '';
-        if (data === undefined || data === null){
-            $('#log_content').html('<h3>ログファイルはありません</h3>');
-            return;
-        }
-        else if (data.length <= 1){
-            $('#log_content').html('<h3>ログファイルはありません</h3>');
-            return;
-        }
-        $.each(data, function(i, e_){
-            if (i === 0) html += '<tr><th>すべてのファイル</th><th><button type="button" class="btn btn-danger log_del" data-file="' + e_ + '">削除</button></th></tr>'
-            else html += '<tr><th>' + e_.slice(e_.lastIndexOf(slash) + slash.length) + '</th><th><button type="button" class="btn btn-danger log_del" data-file="' + e_ + '">削除</button></th></tr>';
-        });
-        $('#log_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">ファイル</th><th data-sortable="false">操作</th></tr></thead><tbody>' + html + '</tbody></table>');
-        resize();
-        $('.log_del').click(function(event){
-            var dir = $(this).data('file');
-            if (dir.slice(-4) === 'logs'){
-                del([dir + slash + '**', '!' + dir], { force: true });
-                $('#log_content').html('<h3>ログファイルはありません</h3>');
-            } else {
-                del(dir, { force: true });
-                $(this).parent().parent().remove();
-            }
-        });
-    });
-    ipc.on('load_backup', function(e, data){
-        var html = '';
-        if (data === undefined || data === null){
-            $('#backup_content').html('<h3>バックアップはありません</h3>');
-            return;
-        }
-        else if (data.length <= 1){
-            $('#backup_content').html('<h3>バックアップはありません</h3>');
-            return;
-        }
-        $.each(data.data, function(i, e_){
-            if (i === 0) html = '<tr><th><a onclick="open_directry(\'' + tohtml(e_) + '\');">全てのバックアップ</a></th><th></th><th><button type="button" class="btn btn-danger backup_del" data-folder="' + e_ + '">削除</button></th></tr>';
-            else {
-                var date = e_.slice(e_.lastIndexOf(slash) + slash.length);
-                html += '<tr><th><a onclick="open_directry(\'' + tohtml(e_) + '\');">' + date + '</a></th><th><button type="button" class="btn btn-primary backup_restore" data-folder="' + e_ + '" data-id="' + data.id + '">復元</button></th><th><button type="button" class="btn btn-danger backup_del" data-folder="' + e_ + '">削除</button></th></tr>';
-            }
-        });
-        $('#backup_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">日付</th><th data-sortable="false">操作</th><th></th></tr></thead><tbody>' + html + '</tbody></table>');
-        resize();
-        $('.backup_del').click(function(event){
-            var dir = $(this).data('folder');
-            dialog.showMessageBox(browserWindow.getFocusedWindow(), {
-                title: 'バックアップ削除', type: 'warning', message: dir.slice(dir.lastIndexOf(slash) + slash.length) + 'のバックアップを削除しますか？',
-                detail: 'バックアップは削除したら復元できません\n(既存のワールドデータに影響はありません)', buttons: ['削除', 'キャンセル'], cancelId: -1,
-                defaultId: 1 },
-                function(b){
-                    if (b !== 0) return;
-                    del(dir, { force: true });
-                    if (dir.slice(-6) === 'backup') $('#log_content').html('<h3>バックアップはありません</h3>');
-                    else $(this).parent().parent().remove();
-                }
-            );
-        });
-        $('.backup_restore').click(function(event){
-            var dir = $(this).data('folder');
-            var id = $(this).data('id');
-            dialog.showMessageBox(browserWindow.getFocusedWindow(), {
-                title: 'ワールド復元', type: 'warning',
-                message: dir.slice(dir.lastIndexOf(slash) + slash.length) + '時点のデータを復元しますか？',
-                detail: 'バックアップされたデータで上書きされます\n(現在のワールドデータはバックアップされます。)',
-                buttons: ['復元', 'キャンセル'], cancelId: -1, defaultId: 1 },
-                function(b){
-                    if (b !== 0) return;
-                    ipc.send('restore', { backup: dir, profile: profiles[id] });
-            });
-        });
-    });
-    ipc.on('restore_success', function(){ dialog.showMessageBox(browserWindow.getFocusedWindow(), { title: '復元完了', type: 'info', message: '復元が完了しました', detail: '起動ボタンでサーバーを立ち上げてください', buttons: ['OK'] }); });
-    //設定画面
-    $('#settings_modal').on('show.bs.modal', function(){
-        for (var name in settings){
-            if (typeof settings[name] === 'boolean') $('#' + name).prop('checked', settings[name]).change() ;
-            else $('#' + name).val(settings[name]);
-        }
-    });
-    $('#settings_save').click(function(){
-        if ($('#backup_dir_bool').prop('checked') && !fs.existsSync($('#backup_dir').val())){
-            $('#backup_dir').parent().addClass('has-error');
-            dialog.showMessageBox(browserWindow.getFocusedWindow(), { title: 'エラー', type: 'warning', message: 'バックアップ先のディレクトリが正しくありません', buttons: ['OK'] });
-            return;
-        }
-        var bd_bak = settings.backup_dir_bool;
-        var s = $('.settings');
-        $.each(s, function(a,b){
-            if ($(b).attr('type') === 'checkbox') settings[$(b).attr('id')] = $(b).prop('checked');
-            else settings[$(b).attr('id')] = $(b).val();
-            if (s.length === a + 1){
-                ipc.send('settings', settings);
-                $('#settings_modal').modal('hide');
-                fs.writeFile(base_dir + 'settings.ams', JSON.stringify(settings), (error) => { /* handle error */ });
-                if (bd_bak !== settings.backup_dir_bool){
-                    $('#loading_text').text('バックアップデータを移動中...');
-                    $('#loading').show();
-                    ipc.send('backup_move', { p: profiles, mode: settings.backup_dir_bool });
-                }
-            }
-        });
-    });
-    $('#backup_select').click(function(){
-        var focusedWindow = browserWindow.getFocusedWindow();
-        dialog.showOpenDialog(focusedWindow, {
-            properties: ['openDirectory']
-        }, function(directories){
-            if (directories === undefined) return;
-            $('#backup_dir').val(directories[0]).parent().removeClass('has-error');
-        });
-    });
-    ipc.on('backup_move_finish', function(){
-        $('#loading').hide();
-        dialog.showMessageBox(browserWindow.getFocusedWindow(), { title: '移動完了', type: 'info', message: 'バックアップデータの移動が完了しました', detail: '問題があった場合は報告してください。', buttons: ['OK'] });
-    });
-    /*$('#remove_profile').click(function(){
-        var id = $('#remove_id').val();
-        delete profiles[id];
-        fs.writeFile('profile.ams', JSON.stringify(profiles));
-        $('#' + id + '_tab').parent().remove();
-        $('#' + id + '_content').remove();
-        //reload_profile();
-        $('#remove_modal').modal('hide');
-    });
-    $('#remove_file').click(function(){
-        var id = $('#remove_id').val();
-        if (fs.existsSync(profiles[id].folder))
-            try {
-                del(profiles[id].folder, {
-                    force: true
-                });
-            } catch (ex){ alert('フォルダーを削除できませんでした\nパス:' + profiles[id].folder); }
-        delete profiles[id];
-        fs.writeFile('profile.ams', JSON.stringify(profiles));
-        $('#' + id + '_tab').parent().remove();
-        $('#' + id + '_content').remove();
-        //reload_profile();
-        $('#remove_modal').modal('hide');
-    });*/
-    $('#eula_modal').on('show.bs.modal', function(e){
-        $.ajax({
-            url: 'https://account.mojang.com/documents/minecraft_eula',
-            type: 'GET',
-            success: function(data){
-                    data = data.replace('/images', 'https://account.mojang.com/images');
-                    var s = data.indexOf('<div id="main"');
-                    var e = data.indexOf('<footer');
-                    $('#eula_div').html(data.slice(s, e - 7));
-                }
-            });
-        //$('#eula_iframe')[0].contentDocument.location.replace('https://account.mojang.com/documents/minecraft_eula');
-    });
-    $('#eula_modal').on('hide.bs.modal', function(e){ $('#eula_agree').off('click'); });
-
-    //データ選択
-    $('.drag_area').bind('drop', function(e){
-        e.preventDefault();
-        var files = e.originalEvent.dataTransfer.files;
-        var d = '';
-        if (files.length === 0) return;
-        else if (files[0].type === 'application/x-zip-compressed') load_zip(files[0].path);
-        else {
-            if (path.extname(files[0].path) === '') d = files[0].path;
-            else d = path.dirname(files[0].path); //////////////
-            load_data(d);
+        if ($('#version').text() === '選択' && $('#version').parent().parent().css('display') !== 'none'){
+            $('#version').addClass('btn-danger');
+            error = true;
         }
     }
-    ).bind('dragenter', function(){ return false; }
-    ).bind('dragover', function(){ return false; });
-    $('.drag_click_folder').click(function(){
-        var focusedWindow = browserWindow.getFocusedWindow();
-        dialog.showOpenDialog(focusedWindow, {
-            properties: ['openDirectory']
-        }, function(directories){
-            if (directories === undefined) return;
-            load_data(directories[0]);
+    else {
+        //名前重複(新規)
+        $.each(profiles, function(i, e){
+            if ($('#name').val() === e.name){
+                $('#name').parent().addClass('has-error');
+                error = true;
+            }
         });
-    });
-    $('.drag_click_file').click(function(){
-        var focusedWindow = browserWindow.getFocusedWindow();
-        dialog.showOpenDialog(focusedWindow, {
-            properties: ['openFile']
-        }, function(files){
-            if (files === undefined) return;
-            else if (files[0].type === 'application/x-zip-compressed') load_zip(files[0].path);
-            else load_data(path.dirname(files[0]));
-        });
-    });
-
-    //不具合報告
-    $('#report_type_select').click(function(event){
-        if ($('#report_type').text().trim() === '不具合報告(ポート開放)'){
-            upnp.findGateway(function(a, b, c){
-                var data = {};
-                data.error = a;
-                data.device = b;
-                data.gateway = c;
-                data.adapter = require('os').networkInterfaces();
-                $('#port_text').text(JSON.stringify(data));
-            });
-            $('#port_text, #port_text_h').show();
-            $('#report_text').css('height', '40%');
-        } else {
-            $('#port_text, #port_text_h').hide();
-            $('#report_text').css('height', '70%');
+        //フォルダーチェック(新規)
+        if (!fs.existsSync($('#folder_input').val()) && $('#folder_input').val() !== ''){
+            $('#folder_input').parent().addClass('has-error');
+            error = true;
         }
+        //Jarチェック(新規)
+        if ($('#version').text() === '選択' && !fs.existsSync($('#jar_input').val()) && $('#jar_input').val().slice(0, 2) !== '..' && $('#jar_choice').text().trim() === '必ず選択してください'){
+            if ($('#version').parent().parent().css('display') === 'none') $('#jar_input').parent().addClass('has-error');
+            else $('#version').addClass('btn-danger');
+            error = true;
+        }
+    }
+    if (error) return;
+    var a = {};
+    a.id = $('#id').val();
+    a.name = $('#name').val();
+    a.folder = $('#folder_input').val();
+    a.jar = $('#jar_input').val();
+    a.max_memory = $('#max_memory_text').val().slice(0, -2);
+    a.min_memory = $('#min_memory_text').val().slice(0, -2);
+    a.upnp = $('#upnp_check').prop('checked');
+    a.backup = $('#backup_check').prop('checked');
+    a.backup_minute = $('#backup_minute').val();
+    a.backup_count = $('#backup_count').val();
+    if (!p){
+        //フォルダ自動指定
+        if ($('#folder_input').val() === ''){
+            var name = $('#name').val().replace(/:/g, '_').replace(/;/g, '_').replace(/\\/g, '_').replace(slash, '_').replace(/\|/g, '_').replace(/,/g, '_').replace(/\*/g, '_').replace(/\?/g, '_').replace(/"/g, '_').replace(/</g, '_').replace(/>/g, '_');
+            a.folder = path.dirname(fs.realpathSync('./')) + slash + name;
+            try { fs.mkdirSync(a.folder); } catch(ex){}
+            $('#folder_input').val(a.folder);
+        }
+        profiles[a.id] = a;
+        fs.writeFile(base_dir + 'profile.ams', JSON.stringify(profiles), (error) => { /* handle error */ });
+        if ($('#profile_modal').data('zip_bool')){
+            if ($('#jar_input').val() !== ''){
+                a.jar = a.jar.replace('..' + slash, $('#folder_input').val() + slash);
+                $('#jar_input').val(a.jar);
+                progress(a.id, undefined, { data: $('#profile_modal').data('zip'), type: $('#profile_modal').data('type'), base: $('#profile_modal').data('base'), count: $('#profile_modal').data('count') });
+            }
+            else if ($('#jar_choice').text().trim() !== '必ず選択してください'){
+                a.jar = $('#folder_input').val() + slash + $('#jar_choice').text().trim();
+                $('#jar_input_div').show();
+                $('#jar_choice_div').hide();
+                $('#jar_input').val(a.jar);
+                progress(a.id, undefined, { data: $('#profile_modal').data('zip'), type: $('#profile_modal').data('type'), base: $('#profile_modal').data('base'), count: $('#profile_modal').data('count') });
+            }
+            else {
+                var index = $('#version').text().indexOf(' ');
+                progress(a.id, { ver: $('#version').text().slice(index + 1, -1), type: $('#version').text().slice(0, index), latest: $('#latest_check').prop('checked') }, { data: $('#profile_modal').data('zip'), type: $('#profile_modal').data('type'), base: $('#profile_modal').data('base'), count: $('#profile_modal').data('count') });
+            }
+        }
+        else {
+            if (fs.existsSync($('#jar_input').val())){
+                $('#profile_modal').modal('hide');
+                profile_ready(a.id, true);
+                //reload_profile();
+                create_detail(a.id);
+            }
+            else {
+                var index = $('#version').text().indexOf(' ');
+                progress(a.id, { ver: $('#version').text().slice(index + 1, -1), type: $('#version').text().slice(0, index), latest: $('#latest_check').prop('checked') });
+            }
+        }
+    }
+    else {
+        profiles[a.id] = a;
+        fs.writeFile(base_dir + 'profile.ams', JSON.stringify(profiles), (error) => { /* handle error */ });
+        if ($('#change_check').prop('checked')){
+                var index = $('#version').text().indexOf(' ');
+                progress(a.id, { ver: $('#version').text().slice(index + 1, -1), type: $('#version').text().slice(0, index), latest: $('#latest_check').prop('checked') });
+        }
+        else {
+            $('#profile_modal').modal('hide');
+            profile_ready(a.id, true);
+            create_detail(a.id);
+        }
+    }
+});
+$('#max_memory_slider').on('input', function(){
+    if (parseInt($('#min_memory_slider').val()) > parseInt($(this).val())) $(this).val($('#min_memory_slider').val());
+    $('#max_memory_text').val($(this).val() * 128 + 'MB');
+});
+$('#min_memory_slider').on('input', function(e){
+    if (parseInt($('#max_memory_slider').val()) < parseInt($(this).val())) $(this).val($('#max_memory_slider').val());
+    $('#min_memory_text').val($(this).val() * 128 + 'MB');
+});
+$('#name, #folder_input, #jar_input').keyup(function(){ $(this).parent().removeClass('has-error'); });
+$('.dropdown-menu li a').click(function(){
+    $(this).parents('.dropdown').find('.dropdown-toggle').html($(this).text() + ' <span class="caret"></span>');
+    $(this).parents('.dropdown').find('input[name="dropdown-value"]').val($(this).attr('data-value'));
+    $('#version').removeClass('btn-danger');
+});
+$('#jar_select').click(function(){
+    var focusedWindow = browserWindow.getFocusedWindow();
+    dialog.showOpenDialog(focusedWindow, {
+        properties: ['openFile'],
+        filters: [{ name: 'jar', extensions: ['jar'] }]
+    }, function(files){
+        if (files === undefined) return;
+        $('#jar_input').val(files[0]).parent().removeClass('has-error');
     });
-    $('#report_send').click(function(){
-        var data = {};
-        if ($('#report_type').text().trim() === '不具合報告(ポート開放)') data = { type: 'port_report', data: $('#port_text').text(), text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
-        else if ($('#report_type').text().trim() === '不具合報告') data = { type: 'report', text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
-        else  data = { type: 'demand', text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
-        $.ajax({ url: 'http://xperd.net/tools/ams/report.php', type: 'POST', data: data, dataType: 'json' });
-        $('#report_modal').modal('hide');
-        $('#report_text').val('');
+});
+$('#folder_select').click(function(){
+    var focusedWindow = browserWindow.getFocusedWindow();
+    dialog.showOpenDialog(focusedWindow, {
+        properties: ['openDirectory']
+    }, function(directories){
+        if (directories === undefined) return;
+        $('#folder_input').val(directories[0]).parent().removeClass('has-error');
+        if ($('#name').val() === '') $('#name').val(path.basename(directories[0])).parent().removeClass('has-error');
     });
-    $('.reload').click(function(){
+});
+$('#change_check')
+//properties画面
+$('#manage_modal').on('show.bs.modal', function(event){
+    var a = profiles[$(event.relatedTarget).parent().data('id')];
+    ipc.send('load_manage', a);
+    $('#manage_title').text('サーバー/ログ/コマンド履歴/バックアップの管理 - ' + a.name + ' -');
+    var data = '<tr><th>全ての履歴</th><th><button type="button" class="btn btn-danger command_del" data-text="">削除</button></th></tr>';
+    $.each(indices[a.id], function(i, e_){
+        data += '<tr><th>' + e_ + '</th><th><button type="button" class="btn btn-danger command_del" data-text="' + e_ + '">削除</button></th></tr>';
+    });
+    $('#command_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">コマンド</th><th data-sortable="false">操作</th></tr></thead><tbody>' + data + '</tbody></table>');
+    $('.command_del').click(function(event){
+        var text = $(this).data('text');
+        function check(t){
+            if (text === '') return 'すべての履歴を消しますか？';
+            else return '[' + text + ']を履歴から削除しますか？';
+        }
         dialog.showMessageBox(browserWindow.getFocusedWindow(), {
-            title: 'プログラム再起動', type: 'warning', message: 'ソフトを再起動します', detail: 'サーバーは強制終了されます\n(動作がおかしくなったときにのみ使用してください)', buttons: ['再起動', 'キャンセル'], cancelId: -1, defaultId: 1 },
+            title: 'コマンド履歴削除', type: 'warning', message: check(text), buttons: ['削除', 'キャンセル'], cancelId: -1, defaultId: 1 },
             function(b){
                 if (b !== 0) return;
-                location.reload();
+                if (text === '' && b === 0){
+                    indices[a.id] = ['achievement', 'ban', 'ban-ip', 'banlist', 'blockdata', 'clear', 'clone', 'debug', 'defaultgamemode', 'deop', 'difficulty', 'effect', 'enchant', 'entitydata', 'execute', 'fill', 'gamemode', 'gamerule', 'give', 'help', 'kick', 'kill', 'list', 'me', 'op', 'pardon', 'pardon-ip', 'particle', 'playsound', 'replaceitem', 'save-all', 'save-off', 'save-on', 'say', 'scoreboard', 'seed', 'setblock', 'setidletimeout', 'setworldspawn', 'spawnpoint', 'spreadplayers', 'stats', 'stop', 'tell', 'tellraw', 'testfor', 'testforblock', 'testforblocks', 'time', 'title', 'toggledownfall', 'tp', 'trigger', 'weather', 'whitelist', 'worldborader', 'xp'];
+                    var data = '<tr><th>すべての履歴</th><th><button type="button" class="btn btn-danger command_del" data-text="">削除</button></th></tr>';
+                    $.each(indices[a.id], function(i, e_){
+                        data += '<tr><th>' + e_ + '</th><th><button type="button" class="btn btn-danger command_del" data-text="' + e_ + '">削除</button></th></tr>';
+                    });
+                    $('#command_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">コマンド</th><th data-sortable="false">操作</th></tr></thead><tbody>' + data + '</tbody></table>');
+                }
+                else if (b === 0){
+                    indices[a.id].splice(indices[a.id].indexOf(text), 1);
+                    $(this).parent().parent().remove();
+                }
+            save_indices(a.id);
         });
     });
-    $(document).on('click', '.popover', function(evt){ evt.stopPropagation(); });
-    $(document).on('click', 'html', function(){ $('[data-toggle=popover]').popover('hide'); });
+});
+$('.properties_toggle').on('switchChange.bootstrapSwitch', function(event, state){
+    properties[$(this).attr('id')] = state;
+    ipc.send('save_properties', { location: properties_location, data: properties });
+});
+$('.properties_text').change(function(event){
+    properties[$(this).attr('id')] = $(this).val();
+    ipc.send('save_properties', { location: properties_location, data: properties });
+});
+$('.properties_drop').click(function(event){
+    var a = $(this).parent().find('.dropdown-toggle');
+    var text = a.text().trim();
+    switch (a.attr('id')){
+        case 'difficulty': properties[a.attr('id')] = ({'ピースフル':'0', 'イージー':'1', 'ノーマル':'2', 'ハード':'3'})[text]; break;
+        case 'gamemode': properties[a.attr('id')] = ({'サバイバル':'0', 'クリエイティブ':'1', 'アドベンチャー':'2', 'スペクテイター':'3'})[text]; break;
+        case 'level-type': properties[a.attr('id')] = ({'通常':'DEFAULT', 'フラット':'FLAT', '大きなバイオーム':'LARGEBIOMES', 'アンプリファイド':'AMPLIFIED', 'カスタマイズ':'CUSTOMIZED'})[text]; break;
+    }
+    ipc.send('save_properties', { location: properties_location, data: properties });
+});
+var properties, properties_location;
+ipc.on('load_properties', function(e, data){
+    if (data === undefined || data === null) return;
+    properties_location = data.location;
+    properties = data.data;
+    for (var key in properties)
+    {
+        var val = properties[key];
+        switch (key){
+            case 'difficulty':
+                $('#difficulty').html((['ピースフル', 'イージー', 'ノーマル', 'ハード'])[val] + ' <span class="caret"></span>');
+                break;
+            case 'gamemode':
+                $('#gamemode').html((['サバイバル', 'クリエイティブ', 'アドベンチャー', 'スペクテイター'])[val] + ' <span class="caret"></span>');
+                break;
+            case 'level-type':
+                $('#level-type').html(({'DEFAULT': '通常', 'FLAT': 'フラット', 'LARGEBIOMES': '大きなバイオーム', 'AMPLIFIED': 'アンプリファイド', 'CUSTOMIZED': 'カスタマイズ'})[val] + ' <span class="caret"></span>');
+                break;
+            default:
+                if ($('#' + key).attr('name') === 'toggle'){
+                    if (val === 'true') $('#' + key).bootstrapSwitch('state', true);
+                    else if (val === 'false') $('#' + key).bootstrapSwitch('state', false);
+                } else $('#' + key).val(val);
+        }
+    }
+    resize();
+});
+ipc.on('load_logs', function(e, data){
+    var html = '';
+    if (data === undefined || data === null){
+        $('#log_content').html('<h3>ログファイルはありません</h3>');
+        return;
+    }
+    else if (data.length <= 1){
+        $('#log_content').html('<h3>ログファイルはありません</h3>');
+        return;
+    }
+    $.each(data, function(i, e_){
+        if (i === 0) html += '<tr><th>すべてのファイル</th><th><button type="button" class="btn btn-danger log_del" data-file="' + e_ + '">削除</button></th></tr>'
+        else html += '<tr><th>' + e_.slice(e_.lastIndexOf(slash) + slash.length) + '</th><th><button type="button" class="btn btn-danger log_del" data-file="' + e_ + '">削除</button></th></tr>';
+    });
+    $('#log_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">ファイル</th><th data-sortable="false">操作</th></tr></thead><tbody>' + html + '</tbody></table>');
+    resize();
+    $('.log_del').click(function(event){
+        var dir = $(this).data('file');
+        if (dir.slice(-4) === 'logs'){
+            del([dir + slash + '**', '!' + dir], { force: true });
+            $('#log_content').html('<h3>ログファイルはありません</h3>');
+        } else {
+            del(dir, { force: true });
+            $(this).parent().parent().remove();
+        }
+    });
+});
+ipc.on('load_backup', function(e, data){
+    var html = '';
+    if (data === undefined || data === null){
+        $('#backup_content').html('<h3>バックアップはありません</h3>');
+        return;
+    }
+    else if (data.length <= 1){
+        $('#backup_content').html('<h3>バックアップはありません</h3>');
+        return;
+    }
+    $.each(data.data, function(i, e_){
+        if (i === 0) html = '<tr><th><a onclick="open_directry(\'' + tohtml(e_) + '\');">全てのバックアップ</a></th><th></th><th><button type="button" class="btn btn-danger backup_del" data-folder="' + e_ + '">削除</button></th></tr>';
+        else {
+            var date = e_.slice(e_.lastIndexOf(slash) + slash.length);
+            html += '<tr><th><a onclick="open_directry(\'' + tohtml(e_) + '\');">' + date + '</a></th><th><button type="button" class="btn btn-primary backup_restore" data-folder="' + e_ + '" data-id="' + data.id + '">復元</button></th><th><button type="button" class="btn btn-danger backup_del" data-folder="' + e_ + '">削除</button></th></tr>';
+        }
+    });
+    $('#backup_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">日付</th><th data-sortable="false">操作</th><th></th></tr></thead><tbody>' + html + '</tbody></table>');
+    resize();
+    $('.backup_del').click(function(event){
+        var dir = $(this).data('folder');
+        dialog.showMessageBox(browserWindow.getFocusedWindow(), {
+            title: 'バックアップ削除', type: 'warning', message: dir.slice(dir.lastIndexOf(slash) + slash.length) + 'のバックアップを削除しますか？',
+            detail: 'バックアップは削除したら復元できません\n(既存のワールドデータに影響はありません)', buttons: ['削除', 'キャンセル'], cancelId: -1,
+            defaultId: 1 },
+            function(b){
+                if (b !== 0) return;
+                del(dir, { force: true });
+                if (dir.slice(-6) === 'backup') $('#log_content').html('<h3>バックアップはありません</h3>');
+                else $(this).parent().parent().remove();
+            }
+        );
+    });
+    $('.backup_restore').click(function(event){
+        var dir = $(this).data('folder');
+        var id = $(this).data('id');
+        dialog.showMessageBox(browserWindow.getFocusedWindow(), {
+            title: 'ワールド復元', type: 'warning',
+            message: dir.slice(dir.lastIndexOf(slash) + slash.length) + '時点のデータを復元しますか？',
+            detail: 'バックアップされたデータで上書きされます\n(現在のワールドデータはバックアップされます。)',
+            buttons: ['復元', 'キャンセル'], cancelId: -1, defaultId: 1 },
+            function(b){
+                if (b !== 0) return;
+                ipc.send('restore', { backup: dir, profile: profiles[id] });
+        });
+    });
+});
+ipc.on('restore_success', function(){ dialog.showMessageBox(browserWindow.getFocusedWindow(), { title: '復元完了', type: 'info', message: '復元が完了しました', detail: '起動ボタンでサーバーを立ち上げてください', buttons: ['OK'] }); });
+//設定画面
+$('#settings_modal').on('show.bs.modal', function(){
+    for (var name in settings){
+        if (typeof settings[name] === 'boolean') $('#' + name).prop('checked', settings[name]).change() ;
+        else $('#' + name).val(settings[name]);
+    }
+});
+$('#settings_save').click(function(){
+    if ($('#backup_dir_bool').prop('checked') && !fs.existsSync($('#backup_dir').val())){
+        $('#backup_dir').parent().addClass('has-error');
+        dialog.showMessageBox(browserWindow.getFocusedWindow(), { title: 'エラー', type: 'warning', message: 'バックアップ先のディレクトリが正しくありません', buttons: ['OK'] });
+        return;
+    }
+    var bd_bak = settings.backup_dir_bool;
+    var s = $('.settings');
+    $.each(s, function(a,b){
+        if ($(b).attr('type') === 'checkbox') settings[$(b).attr('id')] = $(b).prop('checked');
+        else settings[$(b).attr('id')] = $(b).val();
+        if (s.length === a + 1){
+            ipc.send('settings', settings);
+            $('#settings_modal').modal('hide');
+            fs.writeFile(base_dir + 'settings.ams', JSON.stringify(settings), (error) => { /* handle error */ });
+            if (bd_bak !== settings.backup_dir_bool){
+                $('#loading_text').text('バックアップデータを移動中...');
+                $('#loading').show();
+                ipc.send('backup_move', { p: profiles, mode: settings.backup_dir_bool });
+            }
+        }
+    });
+});
+$('#backup_select').click(function(){
+    var focusedWindow = browserWindow.getFocusedWindow();
+    dialog.showOpenDialog(focusedWindow, {
+        properties: ['openDirectory']
+    }, function(directories){
+        if (directories === undefined) return;
+        $('#backup_dir').val(directories[0]).parent().removeClass('has-error');
+    });
+});
+ipc.on('backup_move_finish', function(){
+    $('#loading').hide();
+    dialog.showMessageBox(browserWindow.getFocusedWindow(), { title: '移動完了', type: 'info', message: 'バックアップデータの移動が完了しました', detail: '問題があった場合は報告してください。', buttons: ['OK'] });
+});
+/*$('#remove_profile').click(function(){
+    var id = $('#remove_id').val();
+    delete profiles[id];
+    fs.writeFile('profile.ams', JSON.stringify(profiles));
+    $('#' + id + '_tab').parent().remove();
+    $('#' + id + '_content').remove();
+    //reload_profile();
+    $('#remove_modal').modal('hide');
+});
+$('#remove_file').click(function(){
+    var id = $('#remove_id').val();
+    if (fs.existsSync(profiles[id].folder))
+        try {
+            del(profiles[id].folder, {
+                force: true
+            });
+        } catch (ex){ alert('フォルダーを削除できませんでした\nパス:' + profiles[id].folder); }
+    delete profiles[id];
+    fs.writeFile('profile.ams', JSON.stringify(profiles));
+    $('#' + id + '_tab').parent().remove();
+    $('#' + id + '_content').remove();
+    //reload_profile();
+    $('#remove_modal').modal('hide');
+});*/
+$('#eula_modal').on('show.bs.modal', function(e){
+    $.ajax({
+        url: 'https://account.mojang.com/documents/minecraft_eula',
+        type: 'GET',
+        success: function(data){
+                data = data.replace('/images', 'https://account.mojang.com/images');
+                var s = data.indexOf('<div id="main"');
+                var e = data.indexOf('<footer');
+                $('#eula_div').html(data.slice(s, e - 7));
+            }
+        });
+    //$('#eula_iframe')[0].contentDocument.location.replace('https://account.mojang.com/documents/minecraft_eula');
+});
+$('#eula_modal').on('hide.bs.modal', function(e){ $('#eula_agree').off('click'); });
+
+//データ選択
+$('.drag_area').bind('drop', function(e){
+    e.preventDefault();
+    var files = e.originalEvent.dataTransfer.files;
+    var d = '';
+    if (files.length === 0) return;
+    else if (files[0].type === 'application/x-zip-compressed') load_zip(files[0].path);
+    else {
+        if (path.extname(files[0].path) === '') d = files[0].path;
+        else d = path.dirname(files[0].path); //////////////
+        load_data(d);
+    }
 }
+).bind('dragenter', function(){ return false; }
+).bind('dragover', function(){ return false; });
+$('.drag_click_folder').click(function(){
+    var focusedWindow = browserWindow.getFocusedWindow();
+    dialog.showOpenDialog(focusedWindow, {
+        properties: ['openDirectory']
+    }, function(directories){
+        if (directories === undefined) return;
+        load_data(directories[0]);
+    });
+});
+$('.drag_click_file').click(function(){
+    var focusedWindow = browserWindow.getFocusedWindow();
+    dialog.showOpenDialog(focusedWindow, {
+        properties: ['openFile']
+    }, function(files){
+        if (files === undefined) return;
+        else if (files[0].type === 'application/x-zip-compressed') load_zip(files[0].path);
+        else load_data(path.dirname(files[0]));
+    });
+});
+
+//不具合報告
+$('#report_type_select').click(function(event){
+    if ($('#report_type').text().trim() === '不具合報告(ポート開放)'){
+        upnp.findGateway(function(a, b, c){
+            var data = {};
+            data.error = a;
+            data.device = b;
+            data.gateway = c;
+            data.adapter = require('os').networkInterfaces();
+            $('#port_text').text(JSON.stringify(data));
+        });
+        $('#port_text, #port_text_h').show();
+        $('#report_text').css('height', '40%');
+    } else {
+        $('#port_text, #port_text_h').hide();
+        $('#report_text').css('height', '70%');
+    }
+});
+$('#report_send').click(function(){
+    var data = {};
+    if ($('#report_type').text().trim() === '不具合報告(ポート開放)') data = { type: 'port_report', data: $('#port_text').text(), text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
+    else if ($('#report_type').text().trim() === '不具合報告') data = { type: 'report', text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
+    else  data = { type: 'demand', text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
+    $.ajax({ url: 'http://xperd.net/tools/ams/report.php', type: 'POST', data: data, dataType: 'json' });
+    $('#report_modal').modal('hide');
+    $('#report_text').val('');
+});
+$('.reload').click(function(){
+    dialog.showMessageBox(browserWindow.getFocusedWindow(), {
+        title: 'プログラム再起動', type: 'warning', message: 'ソフトを再起動します', detail: 'サーバーは強制終了されます\n(動作がおかしくなったときにのみ使用してください)', buttons: ['再起動', 'キャンセル'], cancelId: -1, defaultId: 1 },
+        function(b){
+            if (b !== 0) return;
+            location.reload();
+    });
+});
+$(document).on('click', '.popover', function(evt){ evt.stopPropagation(); });
+$(document).on('click', 'html', function(){ $('[data-toggle=popover]').popover('hide'); });
 
 //メニュー
 function menu(){
