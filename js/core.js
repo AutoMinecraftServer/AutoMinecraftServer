@@ -144,15 +144,6 @@ $.ajax({ url: org + 'master/parts/info.html', type: 'GET',
 //Minecraftバージョン情報取得
 $.ajax({ url: org + 'master/parts/versions.html', type: 'GET',
     success: function(data){ $('#version_body').html(data); }, error: function(xhr, status, err){} });
-/*$.ajax({
-    url: 'http://xperd.net/tools/ams/version.txt?',
-    type: 'GET',
-    success: function(data){
-        if (versionCompare(data, app.getVersion()) === 1)
-            $('#update_modal').modal('show');
-    },
-    error: function(xhr, status, err){}
-});*/
 
 //プロファイル、設定ファイル読み込み
 fs.readFile(base_dir + 'profile.ams', 'utf8', function(e, t){
@@ -695,7 +686,7 @@ $('#report_send').click(function(){
     if ($('#report_type').text().trim() === '不具合報告(ポート開放)') data = { type: 'port_report', data: $('#port_text').text(), text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
     else if ($('#report_type').text().trim() === '不具合報告') data = { type: 'report', text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
     else  data = { type: 'demand', text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
-    $.ajax({ url: 'http://xperd.net/tools/ams/report.php', type: 'POST', data: data, dataType: 'json' });
+    $.ajax({ url: 'http://ams.xperd.net/report.php', type: 'POST', data: data, dataType: 'json' });
     $('#report_modal').modal('hide');
     $('#report_text').val('');
 });
@@ -1012,7 +1003,7 @@ function port_check(id, port_num){
 
     if (id === undefined) $('#port_check_manual').text('お待ちください...').prop('disabled', true);;
     $.ajax({
-        url: 'http://xperd.net/tools/ams/port.php?port=' + port_num
+        url: 'http://ams.xperd.net/port_check.php?port=' + port_num
     }).done(function(data){
         //ajaxの通信に成功した場合
         after(true);
