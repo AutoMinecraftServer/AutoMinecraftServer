@@ -175,6 +175,8 @@ ipc.on('update', function(e, a){
     if (a === 'update-not-available') set('[最新]', '');
     if (a === 'update-available') set('[アップデートあり]', '手動で更新でしてください');
     if (a === 'update-ready') set('[アップデート準備完了]', '次回起動時に更新されます');
+    if (a === 'update-check-error') set('[アップデートチェックエラー]', 'GitHubに接続できません');
+    if (a === 'update-auto-error') set('[自動アップデートエラー]', '手動で更新でしてください');
 });
 //プロファイル設定画面
 $('#profile_modal').on('show.bs.modal', function(event){

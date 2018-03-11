@@ -10,7 +10,10 @@ const fs = require('fs');
 const path = require('path');
 const copy = require('ncp');
 const del = require('del');
+const got = require('got');
+const semver = require('semver');
 const slash = ((process.platform === 'win32') ? '\\' : '/');
+const lastestURL = 'https://github.com/AutoMinecraftServer/AutoMinecraftServer/releases/latest';
 var settings;
 var mainWindow = null;
 
@@ -133,33 +136,66 @@ app.on('ready', function() {
         mainWindow.webContents.send('update', val);
       }, (now + 3000 < Date.now()) ? 0 : 3000 - (Date.now() - now));
     };
+    let updateFound = null;
+    (async () => {
+        try {
+            let gitHubRes = await got.head(lastestURL);
+            let latestTag = gitHubRes.socket._httpMessage.path.split('/').pop()
+            updateFound = semver.lt(app.getVersion(), latestTag);
+        }
+        catch (ex) {
 
-    var updater = new GhReleases({
-        repo: 'AutoMinecraftServer/AutoMinecraftServer',
-        currentVersion: app.getVersion()
-    });
-
-    updater.check(function(err, status) {
-        if (err && err.message === 'There is no newer version.') {
-            sendUpdate('update-not-available');
-        } else if (err && err.message === 'Can not find Squirrel') {
+        }
+        if (updateFound === true) {
             sendUpdate('update-available');
-        } else if (!err && status) updater.download();
-    });
-
-    updater.on('update-downloaded', function() {
-        sendUpdate('update-ready');
-        require("electron").dialog.showMessageBox({
-            title: 'アップデートのダウンロード完了',
-            message: '今すぐ最新のソフトに更新できます',
-            detail: 'もしここで実行しなくても、次回起動時にインストールされます',
-            buttons: ['再起動', '後で'],
-            cancelId: -1 },
-            function name(i) {
-                if (i === 0) require("electron").autoUpdater.quitAndInstall();
+            if (process.platform === 'win32')
+            {
+                //Windows版は自動アップデートを行う
+                var autoupdater = electron.autoUpdater;
+                autoupdater.setFeedURL('http://ams.xperd.net/update/win32-' + process.arch);
+                autoupdater.on("update-downloaded", function(e, a){
+                    sendUpdate('update-ready');
+                    dialog.showMessageBox({
+                        title: 'アップデートのダウンロード完了',
+                        message: '今すぐ最新のソフトに更新できます',
+                        detail: 'もしここで実行しなくても、次回起動時にインストールされます',
+                        buttons: ['再起動', '後で'],
+                        cancelId: -1 },
+                        function name(i) {
+                            if (i === 0) autoUpdater.quitAndInstall();
+                        }
+                    );
+                });
+                autoupdater.on("error", function(e, a){
+                    sendUpdate('update-auto-error');
+                    dialog.showMessageBox({
+                        title: 'エラー',
+                        message: 'アップデートエラーが起きました',
+                        detail : e.message,
+                        buttons: ['OK']
+                    });
+                });
+                autoupdater.checkForUpdates();
             }
-        );
-    })
+            else
+            {
+                //それ以外は通知してアップデートを促す
+                dialog.showMessageBox({
+                    title: 'アップデートがあります',
+                    message: '今すぐ最新のソフトに更新できます',
+                    buttons: ['ダウンロード', '後で'],
+                    cancelId: -1 },
+                    function name(i) {
+                        if (i === 0) window.open('https://github.com/AutoMinecraftServer/AutoMinecraftServer/releases');
+                    }
+                );
+            }
+        }
+        else if (updateFound === false)
+            sendUpdate('update-not-available');
+        else
+            sendUpdate('update-check-error');
+      })();
 });
 
 function load_data(e, a){
