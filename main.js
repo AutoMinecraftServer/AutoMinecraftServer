@@ -3,11 +3,9 @@
 
 const electron = require("electron");
 const app = electron.app;
-const shell = electron.shell;
 const browserWindow = electron.BrowserWindow;
 const ipc = electron.ipcMain;
 const dialog = electron.dialog;
-const menu = electron.menu;
 const fs = require('fs');
 const path = require('path');
 const copy = require('ncp');
@@ -88,9 +86,8 @@ if (handleStartupEvent()) {
 }
 
 app.on('ready', function() {
-    //Menu.setApplicationMenu(null);
     if (process.argv[1] === '--squirrel-uninstall'){
-        dialog.showMessageBox(BrowserWindow.getFocusedWindow(), {
+        dialog.showMessageBox(browserWindow.getFocusedWindow(), {
             title: 'アンインストール完了',
             type: 'warning',
             message: 'このソフトのデータは削除しましたが、ワールドデータなどは消えていません。\n各自で削除するようにしてください。',
@@ -100,7 +97,7 @@ app.on('ready', function() {
         return;
     }
     else if (process.argv[1] === '--squirrel-install'){
-        mainWindow = new BrowserWindow({width: 800, height: 200, icon: __dirname + '/favicon.ico', frame: false});
+        mainWindow = new browserWindow({width: 800, height: 200, icon: __dirname + '/favicon.ico', frame: false});
         mainWindow.loadURL('file://' + __dirname + '/install.html');
         mainWindow.on('closed', function() {
             mainWindow = null;
@@ -108,11 +105,11 @@ app.on('ready', function() {
         return;
     }
     else{
-        mainWindow = new BrowserWindow({width: 1200, height: 800, "min-width": 800, "min-height": 500, icon: __dirname + '/favicon.ico', frame: true});
+        mainWindow = new browserWindow({width: 1200, height: 800, "min-width": 800, "min-height": 500, icon: __dirname + '/favicon.ico', frame: true});
         mainWindow.loadURL('file://' + __dirname + '/index.html');
         mainWindow.webContents.on('new-window', (event, url) => {
             event.preventDefault();
-            shell.openExternal(url);
+            electron.shell.openExternal(url);
         });
         mainWindow.on('closed', function() {
             mainWindow = null;
