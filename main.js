@@ -1,23 +1,20 @@
 /* global process */
 'use strict';
 
-var electron = require("electron");
-var app = electron.app;
-var shell = electron.shell;
-var BrowserWindow = electron.BrowserWindow;
-var ipc = electron.ipcMain;
-var dialog = electron.dialog;
-var Menu = electron.menu;
-var fs = require('fs');
-var path = require('path');
-var copy = require('ncp');
-var del = require('del');
-var GhReleases = require('electron-gh-releases')
+const electron = require("electron");
+const app = electron.app;
+const shell = electron.shell;
+const browserWindow = electron.BrowserWindow;
+const ipc = electron.ipcMain;
+const dialog = electron.dialog;
+const menu = electron.menu;
+const fs = require('fs');
+const path = require('path');
+const copy = require('ncp');
+const del = require('del');
+const slash = ((process.platform === 'win32') ? '\\' : '/');
 var settings;
-
-var slash;
-if (process.platform === 'win32') slash = '\\';
-else slash = '/';
+var mainWindow = null;
 
 /*electron.CrashReporter.start({
     productName: 'Auto_Minecarft_Server',
@@ -25,7 +22,6 @@ else slash = '/';
     autoSubmit: true
 });*/
 
-var mainWindow = null;
 
 app.on('window-all-closed', function() {
     if (process.platform != 'darwin')
@@ -134,8 +130,8 @@ app.on('ready', function() {
     ipc.on('read_zip', read_zip);
 
     // アップデートチェック
-    var now = Date.now();
-    var sendUpdate = val => {
+    let now = Date.now();
+    let sendUpdate = val => {
       setTimeout(() => {
         mainWindow.webContents.send('update', val);
       }, (now + 3000 < Date.now()) ? 0 : 3000 - (Date.now() - now));
@@ -173,19 +169,19 @@ function load_data(e, a){
     fs.readFile(a.folder + slash + 'logs' + slash + 'latest.log', 'utf8', function(err, t_){
         if (err) { e.sender.send(a.id + '_load_log', undefined); return; }
         if (t_ === '' || t_ === null) return;
-        var data = new Array();
-        var log_array = t_.split(/\r\n|\r|\n/);
-        for (var i = 0; i < log_array.length; i++){
-            var e__ = '';
-            var e_ = require('encoding-japanese').convert(new Buffer(log_array[i]), 'UTF-8', 'SJIS');
-            for(var i_ = 0, len = e_.length; i_ < len; i_++) {
+        let data = new Array();
+        let log_array = t_.split(/\r\n|\r|\n/);
+        for (let i = 0; i < log_array.length; i++){
+            let e__ = '';
+            let e_ = require('encoding-japanese').convert(new Buffer(log_array[i]), 'UTF-8', 'SJIS');
+            for(let i_ = 0, len = e_.length; i_ < len; i_++) {
                 if (e_[i_] < 0) e_[i_] = e_[i_] * -1;
                 e__ += "%" + e_[i_].toString(16);
             }
             try { var log = decodeURIComponent(e__); }
             catch(ex) {}
             if (log !== '' && log !== null && log.indexOf('[') === 0){
-                var index = log.indexOf(':', 10);
+                let index = log.indexOf(':', 10);
                 data.push([ log.substr(1, 8), 'Info', log.substr(index + 2) ]);
             }
             else if (log !== '' && log !== null) data.push([ '', 'ERROR', log ]);
@@ -202,11 +198,11 @@ function load_data(e, a){
 function load_manage(e, a){
     fs.readFile(a.folder + slash + 'server.properties', 'utf8', function (err, t_) {
         if (err) { e.sender.send('load_properties', undefined); return; }
-        var pro_array = {};
-        var text_array = t_.split(/\r\n|\r|\n/);
-        for (var i = 0; i < text_array.length; i++){
+        let pro_array = {};
+        let text_array = t_.split(/\r\n|\r|\n/);
+        for (let i = 0; i < text_array.length; i++){
             if (text_array[i] !== '' && text_array[i] !== null && text_array[i].slice(0, 1) !== '#'){
-                var index = text_array[i].indexOf('=');
+                let index = text_array[i].indexOf('=');
                 pro_array[text_array[i].slice(0, index).replace('.', '_')] = text_array[i].slice(index + 1);;
             }
         }
@@ -217,9 +213,9 @@ function load_manage(e, a){
             e.sender.send('load_logs', undefined);
             return;
         }
-        var files_ = [];
+        let files_ = [];
         files_.push(a.folder + slash + 'logs');
-        for (var i = 0; i < files.length; i++){
+        for (let i = 0; i < files.length; i++){
             files_.push(a.folder + slash + 'logs' + slash + files[i]);
         }
         e.sender.send('load_logs', files_);
@@ -230,9 +226,9 @@ function load_manage(e, a){
             return;
         }
         folders.sort(hikaku);
-        var folders_ = [];
+        let folders_ = [];
         folders_.push(dir(a));
-        for (var i = 0; i < folders.length; i++){
+        for (let i = 0; i < folders.length; i++){
             folders_.push(dir(a) + slash + folders[i]);
         }
         e.sender.send('load_backup', { data: folders_, id: a.id });
@@ -242,17 +238,17 @@ function load_manage(e, a){
 function backup(e, a, b){
     fs.readdir(dir(a), function (err, folders) {
         if (err) return;
-        var folders_ = [];
-        var remove = [];
+        let folders_ = [];
+        let remove = [];
         folders.sort(hikaku);
-        for (var i = 0; i < folders.length; i++){
-            var f = folders[i];
+        for (let i = 0; i < folders.length; i++){
+            let f = folders[i];
             if (f.length === 19 && f.indexOf('.') === -1 && f.indexOf('-') === 4 && f.indexOf('_') === 10)
                 if (folders_.length === a.backup_count - 1) remove.push(f);
                 else folders_.push(f);
         }
-        for (var i = 0; i < folders.length; i++){
-            var r = remove[i];
+        for (let i = 0; i < folders.length; i++){
+            let r = remove[i];
             if (dir(a) + slash + r !== b) require('rimraf')(dir(a) + slash + r, function(error){});
         }
         if (fs.existsSync(a.folder + slash + 'world')) copy(a.folder + slash + 'world', dir(a) + slash + time(), function(err){
@@ -277,7 +273,7 @@ function backup_move(e, a){
                 e.sender.send('backup_move_finish', '');
                 return;
             }
-            for (var i in all){
+            for (let i in all){
                 if (already.indexOf(i) < 0){
                     already.push(i);
                     copy(dir(a.p[i], false), dir(a.p[i], true), function(err){ del([dir(a.p[i], false)], {force: true}).then(paths => { collect(all, already); }); });
@@ -294,7 +290,7 @@ function backup_move(e, a){
                 del([settings.backup_dir], {force: true}).then(paths => { e.sender.send('backup_move_finish', ''); });
                 return;
             }
-            for (var i in all){
+            for (let i in all){
                 if (already.indexOf(i) < 0){
                     already.push(i);
                     copy(dir(a.p[i], true), dir(a.p[i], false), function(err){ back(all, already); });
@@ -310,9 +306,9 @@ function save_properties(e, a){
 }
 
 function read_zip(e, a){
-    var count = 0;
-    var list = [], all_list = [], world_list = [];
-    var type = '', base = '';
+    let count = 0;
+    let list = [], all_list = [], world_list = [];
+    let type = '', base = '';
     fs.createReadStream(a).pipe(require('unzip').Parse())
     .on('entry', function(entry){
         if (entry.type !== 'File'){
@@ -320,7 +316,7 @@ function read_zip(e, a){
             return;
         }
         count++;
-        var name = path.basename(entry.path);
+        let name = path.basename(entry.path);
         list.push(entry.path);
         if (name === 'level.dat' || name === 'level.dat_old' || name === 'session.lock' || name === 'DIM1' || name === 'DIM-1' || name === 'playerdata' || name === 'region' || name === 'stats') world_list.push(path.dirname(entry.path));
         else if (name === 'server.properties' || name === 'whitelist.json' || name === 'usercache.json' || name === 'ops.json' || name === 'banned-players.json' || name === 'banned-ips.json' || name.indexOf('.jar') > 0) all_list.push(path.dirname(entry.path));
@@ -340,11 +336,11 @@ function read_zip(e, a){
 }
 
 function unzip(e, a){
-    var count = 0;
+    let count = 0;
     if (a.type === 'world' && !fs.existsSync(a.profile.folder + slash + 'world')) try { fs.mkdirSync(a.profile.folder + slash + 'world'); } catch(ex){}
     fs.createReadStream(a.file).pipe(require('unzip').Parse())
     .on('entry', function(entry){
-        var file = '';
+        let file = '';
         if (entry.type !== 'File'){
             if (a.type === 'world') file = a.profile.folder + slash + 'world' + entry.path.replace(a.base, '').replace(/\//g, slash);
             else if (a.type === 'all') file = a.profile.folder + slash + entry.path.replace(a.base, '').replace(/\//g, slash);
@@ -364,14 +360,14 @@ function unzip(e, a){
 }
 
 function time(){
-    var DD = new Date();
-    var Year = DD.getFullYear();
-    var Month = DD.getMonth() + 1;
-    var Day = DD.getDate();
-    var Hours = padZero(DD.getHours());
-    var Minutes = padZero(DD.getMinutes());
-    var Seconds = padZero(DD.getSeconds());
-    //var Milliseconds = padZero(DD.getMilliseconds(), true);
+    let DD = new Date();
+    let Year = DD.getFullYear();
+    let Month = DD.getMonth() + 1;
+    let Day = DD.getDate();
+    let Hours = padZero(DD.getHours());
+    let Minutes = padZero(DD.getMinutes());
+    let Seconds = padZero(DD.getSeconds());
+    //let Milliseconds = padZero(DD.getMilliseconds(), true);
     return Year + "-" + padZero(Month) + "-" + padZero(Day) + "_" + Hours + "-" + Minutes + "-" + Seconds;
 }
 
