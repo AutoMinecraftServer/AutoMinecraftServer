@@ -688,9 +688,18 @@ $('#report_send').click(function(){
     if ($('#report_type').text().trim() === '不具合報告(ポート開放)') data = { type: 'port_report', data: $('#port_text').text(), text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
     else if ($('#report_type').text().trim() === '不具合報告') data = { type: 'report', text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
     else  data = { type: 'demand', text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
-    $.ajax({ url: 'http://ams.xperd.net/report.php', type: 'POST', data: data, dataType: 'json' });
     $('#report_modal').modal('hide');
-    $('#report_text').val('');
+    $.ajax({
+        url: 'http://ams.xperd.net/report.php', type: 'POST', data: data,
+        success: () => $('#report_text').val(''),
+        error: (xhr, status, err) => {
+          var type = $('#report_type').text().trim().slice(0, 3)
+          dialog.showMessageBox(browserWindow.getFocusedWindow(), {
+              title: type + '送信失敗', type: 'warning', message: type + 'を正しく送信できませんでした',
+              detail: '時間を開けて再送信するか、公式フォーラムから問い合わせてください',
+          });
+        },
+    });
 });
 $('.reload').click(function(){
     dialog.showMessageBox(browserWindow.getFocusedWindow(), {
