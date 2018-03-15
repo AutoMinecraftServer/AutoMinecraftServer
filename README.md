@@ -10,7 +10,20 @@ Minecraftのサーバーを自動化するためのソフトです。
 ## ビルド方法
 
 electron-packagerを使用しています。   
-`electron-packager %ソースパス% ams --platform=all --arch=all --electron-version=%Elelctronの最新バージョン% --overwrite --asar=true --icon="%ソースパス%\favicon.ico" --name="Auto Minecraft Server" --version-string.CompanyName="Xperd" --version-string.LegalCopyright="Copyright 2018 Xperd. Rights Reserved" --version-string.FileDescription="Auto Minecraft Server" --version-string.OriginalFilename="ams.exe" --version-string.ProductName="Auto Minecraft Server"`  
+```
+electron-packager . ams `
+  --platform="linux,win32" `
+  --arch="ia32,x64,armv7l" `
+  --electron-version=1.8.2 `
+  --overwrite `
+  --asar `
+  --icon=".\favicon.ico" `
+  --win32metadata.CompanyName="Xperd" `
+  --win32metadata.FileDescription="Auto Minecraft Server" `
+  --win32metadata.OriginalFilename="ams.exe" `
+  --win32metadata.ProductName="Auto Minecraft Server" `
+  --app-copyright="Copyright 2018 Xperd. Rights Reserved"
+``` 
 
 Windows版はこれに加えGruntによるコンパイルをしています。  
 ```javascript:Gruntfile.js
