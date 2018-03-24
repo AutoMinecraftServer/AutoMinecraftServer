@@ -1162,7 +1162,7 @@ function profile_ready(id, first){
 
 //タブの内容生成
 function create_detail(extra){
-    $('.active').removeClass('active');
+    $('main_right .active').removeClass('active');
     if (extra === null ){
         var i_ = 0;
         $.each(profiles, function(i, e){
