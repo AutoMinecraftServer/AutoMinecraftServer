@@ -913,10 +913,9 @@ function add_line(id, text){
         clearInterval(nopeoples[id]);
         $('#' + id + '_nopeople').text('無人時間：--:--:--');
         var name = e.slice(index + 2, e.indexOf('[', index));
-        getUUID(name, uuid => {
-            $('#' + id + '_players').append('<span class="player" id="' + id + '_' + name + '"><img src="https://crafatar.com/avatars/' + uuid + '"><mark>' + name + '</mark><span>');
+        getAvatarURL(name, url => {
+            $('#' + id + '_players').append('<span class="player" id="' + id + '_' + name + '"><img src="' + url + '"><mark>' + name + '</mark><span>');
         });
-        //$('#' + id + '_status_players').append('<mark class="' + id + '_' + name + '">' + name + '</mark>');
         players[id].push(name);
     }
     else if (e.indexOf('lost connection') > -1){
@@ -1443,13 +1442,13 @@ function uuid(){
     return ( S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4()) ;
 }
 
-function getUUID(name, callback) {
+function getAvatarURL(name, callback) {
     request({
         url: 'https://api.mojang.com/users/profiles/minecraft/' + name,
         json: true,
     }, (err, res, body) => {
-        if (err || !body) callback('');
-        else callback(body.id);
+        if (err || !body) return callback('');
+        callback('https://crafatar.com/avatars/' + body.id);
     });
 }
 
