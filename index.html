@@ -99,8 +99,8 @@
         <input id="max_memory_text" type="text" class="form-control input-sm right-button" placeholder="" value="1024MB"></dd>
         <dt>最小メモリ : </dt><dd><input id="min_memory_slider" type="range" min="4" max="32" value="4" class="custom left-input">
         <input id="min_memory_text" type="text" class="form-control input-sm right-button" placeholder="" value="512MB"></dd>
-        <dt>オプション : </dt><dd><label><input id="upnp_check" type="checkbox"> UPnPによるポート開放</label><br>
-        <div class="row"><div class="col-xs-5"><label><input id="backup_check" type="checkbox"> 自動バックアップ</label></div><div class="col-xs-2" style="padding: 0 1px"><input id="backup_minute" type="number" min="1" class="form-control input-sm" value="10"></div><div class="col-xs-1" style="padding: 0 1px"> 分毎</div><div class="col-xs-2" style="padding: 0 1px"><input id="backup_count" type="number" min="1" class="form-control input-sm" value="5"></div><div class="col-xs-2" style="padding: 0 1px"> 個まで</div></div></dd>
+        <dt>オプション : </dt><dd><label><input id="upnp_check" type="checkbox">UPnPによるポート開放</label><br>
+        <div class="row"><div class="col-xs-5"><label><input id="backup_check" type="checkbox">自動バックアップ</label></div><div class="col-xs-2" style="padding: 0 1px"><input id="backup_minute" type="number" min="1" class="form-control input-sm" value="10"></div><div class="col-xs-1" style="padding: 0 1px"> 分毎</div><div class="col-xs-2" style="padding: 0 1px"><input id="backup_count" type="number" min="1" class="form-control input-sm" value="5"></div><div class="col-xs-2" style="padding: 0 1px"> 個まで</div></div></dd>
         <dt>バージョン : </dt>
         <dd style="display: none;"><label><input id="change_check" type="checkbox" onchange="if ($(this).prop('checked')) $('#version').parent().parent().show(); else  $('#version').parent().parent().hide();"> Minecraftバージョンを変更</label></dd>
         <dd style="display: none;"><div class="dropdown" style="display: inline-block;"><a class="btn btn-default dropdown-toggle" id="version" data-toggle="dropdown">選択<span class="caret"></span></a>
@@ -190,7 +190,7 @@
             <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Forge 1.2.3</a></li>
             <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Forge 1.1</a></li>-->
         </ul></div>
-            <label style="margin-left: 5px;"><input id="latest_check" type="checkbox"> latest(最新版、Forgeのみ)</label>
+            <label><input id="latest_check" type="checkbox">latest(最新版、Forgeのみ)</label>
         </dd></dl>
         <div class="progress progress-striped active" style="display: none; margin-bottom: 4px;"><div id="progress" class="progress-bar progress-bar-info" id="loading" style="width: 0%;"></div></div>
         <p id="progress_text" class="text-right" style="display: none;">処理中...(0%)</p>
@@ -369,14 +369,14 @@
     </ul>
     <div class="tab-content" style="height:100%; padding: 10px;">
         <div class="tab-pane in active" id="general_settings_content">
-            <label style="margin-left: 5px;"><input id="" class="settings_ general" type="checkbox"> ----</label>
+            <label><input id="" class="settings_ general" type="checkbox">----</label>
         </div>
         <div class="tab-pane in" id="log_settings_content">
-            <label style="margin-left: 5px;"><input id="log_att" class="settings log" type="checkbox"> [:@～]のようなメッセージを表示</label>
+            <label><input id="log_att" class="settings log" type="checkbox">[:@～]のようなメッセージを表示</label>
         </div>
         <div class="tab-pane in" id="backup_settings_content">
-            <label style="margin-left: 5px;"><input id="backup_notify" class="settings backup" type="checkbox"> バックアップしたことをログで通知</label>
-            <label style="margin-left: 5px;"><input id="backup_dir_bool" class="settings backup" type="checkbox" onchange="$('#backup_dir, #backup_select').prop('disabled', !$(this).prop('checked'))"> 指定フォルダーにまとめてバックアップ</label>
+            <label><input id="backup_notify" class="settings backup" type="checkbox">バックアップしたことをログで通知</label>
+            <label><input id="backup_dir_bool" class="settings backup" type="checkbox" onchange="$('#backup_dir, #backup_select').prop('disabled', !$(this).prop('checked'))">指定フォルダーにまとめてバックアップ</label>
             <input id="backup_dir" type="text" class="form-control input-sm left-input settings backup" placeholder="" disabled="true"><button id="backup_select" type="button" class="btn btn-default right-button" disabled="true">参照</button>
         </div>
     </div></div>

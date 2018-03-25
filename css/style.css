@@ -71,6 +71,10 @@ dt, dd {
     margin: 3px 0;
 }
 
+label {
+    margin-left: 5px;
+}
+
 /*dpi測定*/
 #dpi {
   height: 1in;
@@ -154,6 +158,11 @@ dt, dd {
     padding: 0px 5px;
     width: 120px;
     overflow: hidden;
+}
+
+/* 設定画面用 */
+#settings_modal label {
+    display: block;
 }
 
 /*オーバーレイメニュー*/
@@ -286,6 +295,12 @@ input[type="range"].custom::-webkit-slider-thumb:hover {
 
 input[type="range"].custom:focus {
 	outline:none;
+}
+
+/* checkboxとテキストのスペース */
+#profile_modal input[type=checkbox],
+#settings_modal input[type=checkbox] {
+    margin-right: 4px;
 }
 
 /*リサイズ*/
