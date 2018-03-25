@@ -12,6 +12,7 @@
   "dependencies": {
     "del": "^3.0.0",
     "electron": "^1.8.2",
+    "electron-is-dev": "^0.3.0",
     "encoding-japanese": "^1.0.28",
     "got": "^8.3.0",
     "nat-upnp": "^1.1.1",

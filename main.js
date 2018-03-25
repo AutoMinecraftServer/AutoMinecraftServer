@@ -12,6 +12,7 @@ const copy = require('ncp');
 const del = require('del');
 const got = require('got');
 const semver = require('semver');
+const isDev = require('electron-is-dev');
 const slash = ((process.platform === 'win32') ? '\\' : '/');
 const lastestURL = 'https://github.com/AutoMinecraftServer/AutoMinecraftServer/releases/latest';
 var settings;
@@ -23,6 +24,7 @@ var mainWindow = null;
     autoSubmit: true
 });*/
 
+if (isDev) app.setAppUserModelId('com.squirrel.xperd.ams.ams');
 
 app.on('window-all-closed', function() {
     if (process.platform != 'darwin')
@@ -118,7 +120,7 @@ app.on('ready', function() {
             mainWindow = null;
         });
     }
-    //mainWindow.toggleDevTools();
+    if (isDev) mainWindow.toggleDevTools();
     ipc.on('settings', function(e, a){ settings = a; });
     ipc.on('load_manage', load_manage);
     ipc.on('load_data', load_data);
