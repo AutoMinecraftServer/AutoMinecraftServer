@@ -90,15 +90,15 @@
     </div>
     <div id="profile_modal_body" class="modal-body"><dl class="dl-horizontal">
         <p id="zip_explain" style="display:none;">★保存を押すとZipの解凍が始まります</p>
-        <dt>名前 : </dt><dd><input id="id" type="text" placeholder="" style="display: none;"><input id="name" type="text" class="form-control input-sm" placeholder=""></dd>
-        <dt>データフォルダ : </dt><dd><input id="folder_input" type="text" class="form-control input-sm left-input" placeholder=""><button id="folder_select" type="button" class="btn btn-default right-button">参照</button></dd>
-        <dt>jarファイル : </dt><dd><div id="jar_input_div"><input id="jar_input" type="text" class="form-control input-sm left-input" placeholder=""><button id="jar_select" type="button" class="btn btn-default right-button">参照</button></div>
+        <dt>名前 : </dt><dd><input id="id" type="text" style="display: none;"><input id="name" type="text" class="form-control input-sm"></dd>
+        <dt>データフォルダ : </dt><dd><input id="folder_input" type="text" class="form-control input-sm left-input"><button id="folder_select" type="button" class="btn btn-default right-button">参照</button></dd>
+        <dt>jarファイル : </dt><dd><div id="jar_input_div"><input id="jar_input" type="text" class="form-control input-sm left-input"><button id="jar_select" type="button" class="btn btn-default right-button">参照</button></div>
         <div id="jar_choice_div" style="display:none;"><div class="dropdown"><a class="btn btn-default dropdown-toggle" id="jar_choice" data-toggle="dropdown">必ず選択してください<span class="caret"></span></a>
         <ul id="jar_list" class="dropdown-menu" role="menu" aria-labelledby="jar_choice" style="overflow-x: hidden;"></ul></div></div></dd>
         <dt>最大メモリ : </dt><dd><input id="max_memory_slider" type="range" min="4" max="32" value="8" class="custom left-input">
-        <input id="max_memory_text" type="text" class="form-control input-sm right-button" placeholder="" value="1024MB"></dd>
+        <input id="max_memory_text" type="text" class="form-control input-sm right-button" value="1024MB"></dd>
         <dt>最小メモリ : </dt><dd><input id="min_memory_slider" type="range" min="4" max="32" value="4" class="custom left-input">
-        <input id="min_memory_text" type="text" class="form-control input-sm right-button" placeholder="" value="512MB"></dd>
+        <input id="min_memory_text" type="text" class="form-control input-sm right-button" value="512MB"></dd>
         <dt>オプション : </dt><dd><label><input id="upnp_check" type="checkbox">UPnPによるポート開放</label><br>
         <div class="row"><div class="col-xs-5"><label><input id="backup_check" type="checkbox">自動バックアップ</label></div><div class="col-xs-2" style="padding: 0 1px"><input id="backup_minute" type="number" min="1" class="form-control input-sm" value="10"></div><div class="col-xs-1" style="padding: 0 1px"> 分毎</div><div class="col-xs-2" style="padding: 0 1px"><input id="backup_count" type="number" min="1" class="form-control input-sm" value="5"></div><div class="col-xs-2" style="padding: 0 1px"> 個まで</div></div></dd>
         <dt>バージョン : </dt>
@@ -227,9 +227,9 @@
     <div class="modal-body">
     <ul class="nav nav-tabs">
         <li class="active"><a id="properties_tab" href="#properties_content" data-toggle="tab">サーバー設定(server.properties)</a></li>
-        <li class=""><a id="log_tab" href="#log_content" data-toggle="tab">ログファイル</a></li>
-        <li class=""><a id="command_tab" href="#command_content" data-toggle="tab">コマンド履歴</a></li>
-        <li class=""><a id="backup_tab" href="#backup_content" data-toggle="tab">バックアップ復元・削除</a></li>
+        <li><a id="log_tab" href="#log_content" data-toggle="tab">ログファイル</a></li>
+        <li><a id="command_tab" href="#command_content" data-toggle="tab">コマンド履歴</a></li>
+        <li><a id="backup_tab" href="#backup_content" data-toggle="tab">バックアップ復元・削除</a></li>
     </ul>
     <div class="tab-content" style="height:100%; padding-bottom:23px;">
     <div class="tab-pane in active" id="properties_content" style="height:100%; overflow:scroll;">
@@ -260,10 +260,10 @@
                             <li role="presentation"><a role="menuitem" tabindex="-1" href="#">スペクテイター</a></li>
                         </ul></div></th></tr>
                 <tr><th>建物の生成[generate-structures]</th><th>有効</th><th><input id="generate-structures" class="properties_toggle" type="checkbox" name="toggle" checked></th></tr>
-                <tr><th>スーパーフラットの設定[generator-settings]</th><th></th><th><input id="generator-settings" type="text" class="form-control input-sm properties_text" value=""></th></tr>
+                <tr><th>スーパーフラットの設定[generator-settings]</th><th></th><th><input id="generator-settings" type="text" class="form-control input-sm properties_text"></th></tr>
                 <tr><th>ハードコアの有無[hardcore]</th><th>無効</th><th><input id="hardcore" class="properties_toggle" type="checkbox" name="toggle"></th></tr>
                 <tr><th>ワールドフォルダーの名前[level-name]</th><th>world</th><th><input id="level-name" type="text" class="form-control input-sm properties_text" value="world"></th></tr>
-                <tr><th>ワールド作成時のシード値[level-seed]</th><th></th><th><input id="level-seed" type="text" class="form-control input-sm properties_text" value=""></th></tr>
+                <tr><th>ワールド作成時のシード値[level-seed]</th><th></th><th><input id="level-seed" type="text" class="form-control input-sm properties_text"></th></tr>
                 <tr><th>ワールド作成時の地形[level-type]</th><th>通常</th><th>
                     <div class="dropdown"><a class="btn btn-default dropdown-toggle" id="level-type" data-toggle="dropdown">通常<span class="caret"></span></a>
                         <ul class="dropdown-menu properties_drop" role="menu" aria-labelledby="level-type">
@@ -275,27 +275,27 @@
                         </ul></div></th></tr>
                 <tr><th>ワールドの高さの限界[max-build-height]</th><th>256</th><th><input id="max-build-height" type="number" min="0" class="form-control input-sm properties_text" value="256"></th></tr>
                 <tr><th>最大同時接続数[max-players]</th><th>20</th><th><input id="max-players" type="number" min="0" class="form-control input-sm properties_text" value="20"></th></tr>
-                <tr><th>ウォッチドッグを待つ最大時間(ミリ秒)[max-tick-time]</th><th></th><th><input id="max-tick-time" type="number" min="0" class="form-control input-sm properties_text" value=""></th></tr>
-                <tr><th>最大ワールドサイズ[max-world-size]</th><th></th><th><input id="max-world-size" type="number" min="0" class="form-control input-sm properties_text" value=""></th></tr>
+                <tr><th>ウォッチドッグを待つ最大時間(ミリ秒)[max-tick-time]</th><th></th><th><input id="max-tick-time" type="number" min="0" class="form-control input-sm properties_text"></th></tr>
+                <tr><th>最大ワールドサイズ[max-world-size]</th><th></th><th><input id="max-world-size" type="number" min="0" class="form-control input-sm properties_text"></th></tr>
                 <tr><th>サーバーの説明[motd]</th><th>A Minecraft Server</th><th><input id="motd" type="text" class="form-control input-sm properties_text" value="A Minecraft Server"></th></tr>
-                <tr><th>通信時の圧縮しきい値[network-compression-threshold]</th><th></th><th><input id="network-compression-threshold" type="text" class="form-control input-sm properties_text" value=""></th></tr>
+                <tr><th>通信時の圧縮しきい値[network-compression-threshold]</th><th></th><th><input id="network-compression-threshold" type="text" class="form-control input-sm properties_text"></th></tr>
                 <tr><th>ログイン時の認証設定[online-mode]</th><th>有効</th><th><input id="online-mode" class="properties_toggle" type="checkbox" name="toggle" checked></th></tr>
-                <tr><th>OP権限の権限内容[op-permission-level]</th><th></th><th><input id="op-permission-level" type="text" class="form-control input-sm properties_text" value=""></th></tr>
-                <tr><th>自動kickするタイムアウト時間[player-idle-timeout]</th><th></th><th><input id="player-idle-timeout" type="number" min="0" class="form-control input-sm properties_text" value=""></th></tr>
+                <tr><th>OP権限の権限内容[op-permission-level]</th><th></th><th><input id="op-permission-level" type="text" class="form-control input-sm properties_text"></th></tr>
+                <tr><th>自動kickするタイムアウト時間[player-idle-timeout]</th><th></th><th><input id="player-idle-timeout" type="number" min="0" class="form-control input-sm properties_text"></th></tr>
                 <tr><th>プレイヤー間の攻撃の有無[pvp]</th><th>有効</th><th><input id="pvp" class="properties_toggle" type="checkbox" name="toggle" checked></th></tr>
                 <tr><th>GameSpy4 protocol serverのポート[quert.port]</th><th>25565</th><th><input id="quert_port" type="number" min="0" class="form-control input-sm properties_text" value="25565"></th></tr>
-                <tr><th>リモート接続のパスワード[rcon.password]</th><th></th><th><input id="rcon_password" type="text" class="form-control input-sm properties_text" value=""></th></tr>
+                <tr><th>リモート接続のパスワード[rcon.password]</th><th></th><th><input id="rcon_password" type="text" class="form-control input-sm properties_text"></th></tr>
                 <tr><th>リモート接続のポート[rcon.port]</th><th>25575</th><th><input id="rcon_port" type="number" min="0" class="form-control input-sm properties_text" value="25575"></th></tr>
-                <tr><th>リソースパックの指定[resource-pack]</th><th></th><th><input id="resource-pack" type="text" class="form-control input-sm properties_text" value=""></th></tr>
-                <tr><th>SHA-1ダイジェストの16進数[resource-pack-hash]</th><th></th><th><input id="resource-pack-hash" type="text" class="form-control input-sm properties_text" value=""></th></tr>
-                <tr><th>バインドするIP[server-ip]</th><th></th><th><input id="server-ip" type="text" class="form-control input-sm properties_text" value=""></th></tr>
+                <tr><th>リソースパックの指定[resource-pack]</th><th></th><th><input id="resource-pack" type="text" class="form-control input-sm properties_text"></th></tr>
+                <tr><th>SHA-1ダイジェストの16進数[resource-pack-hash]</th><th></th><th><input id="resource-pack-hash" type="text" class="form-control input-sm properties_text"></th></tr>
+                <tr><th>バインドするIP[server-ip]</th><th></th><th><input id="server-ip" type="text" class="form-control input-sm properties_text"></th></tr>
                 <tr><th>サーバーの名前[server-name]</th><th>Unknown Server</th><th><input id="server-name" type="text" class="form-control input-sm properties_text" value="Unknown Server"></th></tr>
                 <tr><th>サーバーのポート[server-port]</th><th>25565</th><th><input id="server-port" type="number" min="0" class="form-control input-sm properties_text" value="25565"></th></tr>
                 <tr><th>snoopingデータを送信するかどうか[snooper-enabled]</th><th>有効</th><th><input id="snooper-enabled" class="properties_toggle" type="checkbox" name="toggle" checked></th></tr>
                 <tr><th>動物のスポーンの有無[spawn-animals]</th><th>有効</th><th><input id="spawn-animals" class="properties_toggle" type="checkbox" name="toggle" checked></th></tr>
                 <tr><th>モンスターのスポーンの有無[spawn-monsters]</th><th>有効</th><th><input id="spawn-monsters" class="properties_toggle" type="checkbox" name="toggle" checked></th></tr>
                 <tr><th>村人のスポーンの有無[spawn-npcs]</th><th>有効</th><th><input id="spawn-npcs" class="properties_toggle" type="checkbox" name="toggle" checked></th></tr>
-                <tr><th>スポーン地点から編集できなくなるブロックの範囲[spawn-protection]</th><th></th><th><input id="rcon.port" type="text" class="form-control input-sm properties_text" value=""></th></tr>
+                <tr><th>スポーン地点から編集できなくなるブロックの範囲[spawn-protection]</th><th></th><th><input id="rcon.port" type="text" class="form-control input-sm properties_text"></th></tr>
                 <tr><th>サーバーで設定するチャンクの制限範囲[view-distance]</th><th>10</th><th><input id="view-distance" type="number" min="0" class="form-control input-sm properties_text" value="10"></th></tr>
                 <tr><th>ホワイトリストの有効の有無[white-list]</th><th>無効</th><th><input id="white-list" class="properties_toggle" type="checkbox" name="toggle" checked></th></tr>
             </tbody>
@@ -364,12 +364,12 @@
     <div class="modal-body">
     <ul class="nav nav-tabs">
         <li class="active"><a href="#general_settings_content" data-toggle="tab">全般</a></li>
-        <li class=""><a href="#log_settings_content" data-toggle="tab">ログ</a></li>
-        <li class=""><a href="#backup_settings_content" data-toggle="tab">バックアップ</a></li>
+        <li><a href="#log_settings_content" data-toggle="tab">ログ</a></li>
+        <li><a href="#backup_settings_content" data-toggle="tab">バックアップ</a></li>
     </ul>
     <div class="tab-content" style="height:100%; padding: 10px;">
         <div class="tab-pane in active" id="general_settings_content">
-            <label><input id="" class="settings_ general" type="checkbox">----</label>
+            <label><input class="settings_ general" type="checkbox">----</label>
         </div>
         <div class="tab-pane in" id="log_settings_content">
             <label><input id="log_att" class="settings log" type="checkbox">[:@～]のようなメッセージを表示</label>
@@ -377,7 +377,7 @@
         <div class="tab-pane in" id="backup_settings_content">
             <label><input id="backup_notify" class="settings backup" type="checkbox">バックアップしたことをログで通知</label>
             <label><input id="backup_dir_bool" class="settings backup" type="checkbox" onchange="$('#backup_dir, #backup_select').prop('disabled', !$(this).prop('checked'))">指定フォルダーにまとめてバックアップ</label>
-            <input id="backup_dir" type="text" class="form-control input-sm left-input settings backup" placeholder="" disabled="true"><button id="backup_select" type="button" class="btn btn-default right-button" disabled="true">参照</button>
+            <input id="backup_dir" type="text" class="form-control input-sm left-input settings backup" disabled="true"><button id="backup_select" type="button" class="btn btn-default right-button" disabled="true">参照</button>
         </div>
     </div></div>
     <div class="modal-footer">
