@@ -24,7 +24,11 @@ var mainWindow = null;
     autoSubmit: true
 });*/
 
-if (isDev) app.setAppUserModelId('com.squirrel.xperd.ams.ams');
+// 開発時の処理
+if (isDev) {
+  require('electron-debug')({showDevTools: true});
+  app.setAppUserModelId('com.squirrel.xperd.ams.ams');
+}
 
 app.on('window-all-closed', function() {
     if (process.platform != 'darwin')
@@ -120,7 +124,6 @@ app.on('ready', function() {
             mainWindow = null;
         });
     }
-    if (isDev) mainWindow.toggleDevTools();
     ipc.on('settings', function(e, a){ settings = a; });
     ipc.on('load_manage', load_manage);
     ipc.on('load_data', load_data);
