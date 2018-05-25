@@ -1,3 +1,4 @@
+/* eslint-disable */
 /* global $ */
 /* global process */
 var slash;
@@ -16,8 +17,8 @@ var settings = { 'log_att': true, 'backup_notify': false, 'backup_dir_bool': fal
 //設定
 var logs = {};
 //DataTableオブジェクト
-var processes = {};
-//Javaプロセス
+var servers = {};
+//サーバーリスト
 var players = {};
 //プレイヤーリスト
 var timers = {};
@@ -48,9 +49,9 @@ function ver(e){
 
 var electron = require('electron');
 var remote = electron.remote;
-var ipc = electron.ipcRenderer;//require('ipc');
-var dialog = remote.dialog;//remote.require('dialog');
-var browserWindow = remote.BrowserWindow;//remote.require('browser-window');
+var ipc = electron.ipcRenderer;
+var dialog = remote.dialog;
+var browserWindow = remote.BrowserWindow;
 var app = remote.app;
 var exec = require('child_process').spawn;
 var fs = require('fs');
@@ -59,6 +60,7 @@ var del = require('del');
 var encoding = require('encoding-japanese');
 var upnp = require('nat-upnp').createClient();
 var request = require('request');
+var Server = require('./Server')
 
 //右クリックメニュー
 $(document).on('contextmenu', function(e){
@@ -741,22 +743,21 @@ function start_server(id){
     players[id] = [];
     port[id] = [];
     var p = profiles[id];
-    if (!fs.existsSync(p.folder) || !fs.existsSync(p.jar)){
+    var server = servers[id] = new Server(p)
+    server.on('error', err => {
+      if (err === 'Not found server') {
         dialog.showMessageBox(browserWindow.getFocusedWindow(), { title: 'サーバーを起動できません', type: 'error', message: 'ファイル/フォルダーが見つかりません', detail: 'プロファイルの設定を見直してください', buttons: ['OK'] });
-        return;
-    }
+        return
+      }
+    })
     try { logs[id].clear().draw(false); }
     catch (e){
         logs[id] = $('#' + id + '_log').DataTable({ 'info': false, 'ordering': false, 'scrollY': '10000px', 'scrollCollapse': true, 'paging': true, 'pagingType': 'numbers', 'pageLength': 300, 'lengthChange': false });
         resize();
     }
-    processes[id] = exec('java', [/*'-classpath', 'D:\\OneDrive\\AndroidStudioProjects\\utf8-sjis\\bin', 'exec', 'java',*/'-Xmx' + p.max_memory + 'm', '-Xms' + p.min_memory + 'm', '-jar', p.jar, 'nogui'], {
-        cwd: p.folder,
-        encoding: 'utf8'
-    });
-    processes[id].stdout.on('data', function(data){ line_check(id, data); });
-    processes[id].stderr.on('data', function(data){ line_check(id, data); });
-    processes[id].on('exit', stopped_server);
+    server.start()
+    server.on('stopped', stopped_server);
+    server.on('line', text => add_line(id, text));
     $('#' + id + '_cmd_input').val('');
     $('#' + id + '_edit_button, #' + id + '_remove_button, #' + id + '_start_button').prop('disabled', true);
     $('#' + id + '_status_text').text('ステータス：起動中...');
@@ -766,8 +767,7 @@ function start_server(id){
     timers[id] = setInterval('timer("' + id + '")', 1000);
     nopeople_count[id] = 0;
     nopeoples[id] = setInterval('nopeople_timer("' + id + '")', 1000);
-    if (!fs.existsSync(dir(p)))
-        fs.mkdirSync(dir(p));
+    if (!fs.existsSync(dir(p))) fs.mkdirSync(dir(p));
 
     function dir(p){
         if (settings.backup_dir_bool) return settings.backup_dir + slash + p.id;
@@ -789,8 +789,7 @@ function start_server(id){
             upnp.portUnmapping({ public: port[id].port });
         $('#' + id + '_port_text').text('ポート：閉鎖').removeClass('text-warning').removeClass('text-success').addClass('text-danger');
         port[id] = [];
-        if (restart_flag[id])
-            start_server(id);
+        if (restart_flag[id]) start_server(id);
         restart_flag[id] = false;
     }
 }
@@ -800,7 +799,7 @@ function stop_server(id){
     $('#' + id + '_cmd_input, #' + id + '_cmd_button, #' + id + '_stop_button, #' + id + '_restart_button').prop('disabled', true);
     $('#' + id + '_status_text').text('ステータス：停止中...');
     $('.' + id + '_status_color').removeClass('success').removeClass('danger').addClass('warning');
-    send_command(id, 'stop');
+    servers[id].stop()
 }
 
 //サーバー再起動
@@ -814,39 +813,18 @@ function kill_server(id){
     dialog.showMessageBox(browserWindow.getFocusedWindow(), {
         title: '強制終了', type: 'warning', message: 'サーバー[' + profiles[id].name + ']を強制終了します', detail: '通常は停止ボタンをお使いください', buttons: ['OK', 'キャンセル'], cancelId: -1, defaultId: 1, noLink: true },
         function(b){
-            if (b === -1 || b === 1 || processes[id] === undefined) return;
-            if (!processes[id].kill('SIGKILL') && processes[id].pid !== undefined){
-                if (process.platform === 'win32') exec('Taskkill', ['/PID', processes[id].pid, '/F']);
-                else exec('kill', ['-9', processes[id].pid]);
-            }
+            if (b === 0) servers[id].kill()
     });
 }
 
 //コマンド送信
 function send_command(id, ex){
     var cmd = $('#' + id + '_cmd_input').val();
-    if (cmd === '過去ログを表示しています' || cmd === 'stop' || (cmd === '' && ex === undefined))
-        return;
-    if (ex !== undefined)
-        cmd = ex;
-    processes[id].stdin.write(new Buffer(encoding.convert(new Buffer(cmd + '\n'), 'SJIS', 'UTF-8')));
+    if (cmd === '過去ログを表示しています' || cmd === 'stop' || (cmd === '' && ex === undefined)) return;
+    if (ex !== undefined) cmd = ex;
+    servers[id].sendCommand(cmd)
     save_indices(id, cmd);
     $('#' + id + '_cmd_input').val('');
-}
-
-//行に分割
-function line_check(id, text){
-    var ii = 0;
-    while (true){
-        var i = text.indexOf(13, ii);
-        if (i > 0 && text[i + 1] === 10){
-            add_line(id, text.slice(ii, i));
-            ii = i + 2;
-        } else
-            break;
-    }
-    logs[id].draw(false).page('last');
-    $('#' + id + '_log').parent().scrollTop(999999999999999);
 }
 
 //ログの処理
@@ -870,10 +848,10 @@ function add_line(id, text){
         else if (e.substr(index + 2) === 'Saving...') return;
     }
     var index_ = e.substr(index - 5, 4);
-    if (e.indexOf('[') === 0){
+    if (e.startsWith('[')){
         var data = e.substr(index + 2);
         if (data === '') return;
-        else if (!settings.log_att && data.indexOf('[@:') === 0) return;
+        else if (!settings.log_att && data.startsWith('[@:')) return;
         else if (data.substr(0, 1) === '<') logs[id].row.add([time(), '会話', data.replace('<', '&lt;').replace('>', '&gt;')]);
         else
             switch (index_){
@@ -889,7 +867,7 @@ function add_line(id, text){
     } else
         logs[id].row.add([time(), 'ｴﾗｰ', e]);
     if ($('#' + id + '_status_text').text() !== 'ステータス：稼働中')
-        if (e.indexOf('Done') > -1){
+        if (e.includes('Done')){
             $('#' + id + '_status_text').text('ステータス：稼働中');
             $('#' + id + '_cmd_input').prop('disabled', false);
             $('#' + id + '_cmd_button').prop('disabled', false);
@@ -898,18 +876,18 @@ function add_line(id, text){
             $('.' + id + '_status_color').removeClass('warning').removeClass('danger').addClass('success');
             backup(id);
         }
-        else if (e.indexOf('You need to agree to the EULA in order to run the server. Go to eula.txt for more info.') > -1){
+        else if (e.includes('You need to agree to the EULA in order to run the server. Go to eula.txt for more info.')){
             $('#eula_agree').click(function(){
                 $('#eula_modal').modal('hide');
-                eula_agree(id);
+                servers[id].agreeEula()
                 $(this).off('click');
             });
             $('#eula_modal').modal('show');
         }
-        else if (e.indexOf('Starting Minecraft server on') > -1){
+        else if (e.includes('Starting Minecraft server on')){
             if (profiles[id].upnp) port_open(id, parseInt(e.substr(e.indexOf(':', index + 1) + 1)))
         }
-    if (e.indexOf('logged') > -1){
+    if (e.includes('logged')){
         clearInterval(nopeoples[id]);
         $('#' + id + '_nopeople').text('無人時間：--:--:--');
         var name = e.slice(index + 2, e.indexOf('[', index));
@@ -918,7 +896,7 @@ function add_line(id, text){
         });
         players[id].push(name);
     }
-    else if (e.indexOf('lost connection') > -1){
+    else if (e.includes('lost connection')){
         var index_ = e.indexOf('lost connection', index);
         $('#' + id + '_' + e.slice(index + 2, index_ - 1)).remove();
         players[id].splice(players[id].indexOf(e.slice(index + 2, index_ - 1)), 1);
@@ -926,13 +904,6 @@ function add_line(id, text){
             nopeople_count[id] = 0;
             nopeoples[id] = setInterval('nopeople_timer("' + id + '")', 1000);
         }
-    }
-
-    function talk(id, text){
-        if (players[id] === undefined) return false;
-        var flag = false;
-        $.each(players[id], function(i, e){ if (text.indexOf('<' + e + '>') === 0) flag = true; });
-        return flag;
     }
 }
 
@@ -1390,15 +1361,6 @@ function copy_address(id){
     .on('success', function(e){
         $(this).text('コピーしました');
         setTimeout(function(){ $(this).text('アドレスをコピーする'); }, 2000);
-    });
-}
-
-//EULA処理
-function eula_agree(id){
-    fs.readFile(profiles[id].folder + slash + 'eula.txt', 'utf8', function(e, t){
-        if (e) return;
-        fs.writeFile(profiles[id].folder + slash + 'eula.txt', t.replace('false', 'true'), (error) => { /* handle error */ });
-        start_server(id);
     });
 }
 
