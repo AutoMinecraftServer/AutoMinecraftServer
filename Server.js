@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const EventEmitter = require('events')
-const { exec } = require('child_process')
+const exec = require('child_process').spawn
 const encoding = require('encoding-japanese')
 
 class Server extends EventEmitter {
