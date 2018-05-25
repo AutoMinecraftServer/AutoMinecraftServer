@@ -829,6 +829,8 @@ function send_command(id, ex){
 
 //ログの処理
 function add_line(id, text){
+    logs[id].draw(false).page('last');
+    $('#' + id + '_log').parent().scrollTop(999999999999999);
     var e__ = '';
     var e_ = encoding.convert(text, 'UTF-8', 'SJIS');
     for (var i = 0, len = e_.length; i < len; i++){
