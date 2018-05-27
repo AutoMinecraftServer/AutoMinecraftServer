@@ -38,7 +38,6 @@ var backup_flag = {};
 var restart_flag = {};
 //再起動フラグ
 var profile_close = false;
-var open_d = '';
 var base_dir = '';
 
 function resize(){ $(window).trigger('resize'); }
@@ -48,6 +47,7 @@ function ver(e){
 }
 
 var electron = require('electron');
+var shell = electron.shell;
 var remote = electron.remote;
 var ipc = electron.ipcRenderer;
 var dialog = remote.dialog;
@@ -108,15 +108,6 @@ $(document).on('contextmenu', function(e){
             }}
         ]).popup(remote.getCurrentWindow());
 });
-//使用するエクスプローラー判定
-if (process.platform !== 'win32'){
-    var p = exec('which', ['nautilus']);
-    p.on('exit', function(code){ if (code === 0) open_d = 'nautilus'; });
-    var p_ = exec('which', ['thunar']);
-    p_.on('exit', function(code){ if (code === 0) open_d = 'thunar'; });
-    var p__ = exec('which', ['pcmanfm']);
-    p__.on('exit', function(code){ if (code === 0) open_d = 'pcmanfm'; });
-}
 //作業ディレクトリ
 if (process.platform === 'win32') base_dir = path.dirname(fs.realpathSync('./')) + slash;
 else base_dir = path.dirname(fs.realpathSync('')) + slash;
@@ -513,10 +504,10 @@ ipc.on('load_backup', function(e, data){
         return;
     }
     $.each(data.data, function(i, e_){
-        if (i === 0) html = '<tr><th><a onclick="open_directry(\'' + tohtml(e_) + '\');">全てのバックアップ</a></th><th></th><th><button type="button" class="btn btn-danger backup_del" data-folder="' + e_ + '">削除</button></th></tr>';
+        if (i === 0) html = '<tr><th><a onclick="shell.openItem(\'' + tohtml(e_) + '\');">全てのバックアップ</a></th><th></th><th><button type="button" class="btn btn-danger backup_del" data-folder="' + e_ + '">削除</button></th></tr>';
         else {
             var date = e_.slice(e_.lastIndexOf(slash) + slash.length);
-            html += '<tr><th><a onclick="open_directry(\'' + tohtml(e_) + '\');">' + date + '</a></th><th><button type="button" class="btn btn-primary backup_restore" data-folder="' + e_ + '" data-id="' + data.id + '">復元</button></th><th><button type="button" class="btn btn-danger backup_del" data-folder="' + e_ + '">削除</button></th></tr>';
+            html += '<tr><th><a onclick="shell.openItem(\'' + tohtml(e_) + '\');">' + date + '</a></th><th><button type="button" class="btn btn-primary backup_restore" data-folder="' + e_ + '" data-id="' + data.id + '">復元</button></th><th><button type="button" class="btn btn-danger backup_del" data-folder="' + e_ + '">削除</button></th></tr>';
         }
     });
     $('#backup_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">日付</th><th data-sortable="false">操作</th><th></th></tr></thead><tbody>' + html + '</tbody></table>');
@@ -1153,7 +1144,7 @@ function create_detail(extra){
             content = ' in active';
         }
         $('#detail_tab').append('<li class="' + tab + '"><a id="' + e.id + '_tab" href="#' + e.id + '_content" data-toggle="tab">' + e.name + '</a></li>');
-        $('#detail_content').append('<div class="tab-pane' + content + '" id="' + e.id + '_content" style="margin-top: 4px;"><div id="row"><div class="col-xs-5 s-pad"><p id="' + e.id + '_status_text">ステータス：停止</p><p id="' + e.id + '_start_text" style="overflow-x: hidden;">開始時刻：----/--/-- --:--:--</p><p id="' + e.id + '_nopeople" style="width: 50%; float: right;">無人時間：--:--:--</p><p id="' + e.id + '_elapsed_text">経過時間：--:--:--</p><p id="' + e.id + '_next_text">次回予定：</p><a id="' + e.id + '_port_text" data-toggle="popover" data-html="true" data-placement="right" data-trigger="manual" style="width: 120%; cursor: pointer;">ポート：閉鎖</a><div id="' + e.id + '_players" class="players"></div></div><div class="col-sm-7" style="max-width:400px; float:right; padding:0;" data-id="' + e.id + '"><button class="btn btn-primary btn-block bt-one" onclick="open_directry(\'' + tohtml(e.folder) + '\');">作業フォルダーを開く</button><button class="btn btn-primary btn-block bt-one" data-toggle="modal" data-target="#manage_modal">サーバー/ログ/コマンド履歴/バックアップの管理</button><button id="' + e.id + '_edit_button" class="btn btn-warning bt-two" data-toggle="modal" data-target="#profile_modal">プロファイルの編集</button><button id="' + e.id + '_remove_button" class="btn btn-danger bt-two" onclick="remove_profile($(this).parent().data(\'id\'));">プロファイルの削除</button><button id="' + e.id + '_restart_button" class="btn btn-info pull-right bt-four" onclick="restart_server($(this).parent().data(\'id\'));">再起動</button><button id="' + e.id + '_stop_button" class="btn btn-danger pull-right bt-four" onclick="stop_server($(this).parent().data(\'id\'));">停止</button><button id="' + e.id + '_start_button" class="btn btn-success pull-right bt-four" onclick="start_server($(this).parent().data(\'id\'));">起動</button><button class="btn btn-danger pull-right bt-four" onclick="kill_server($(this).parent().data(\'id\'));">強制終了</button></div></div><table id="' + e.id + '_log" class="table table-hover table-condensed"><thead><tr><th data-field="id" data-align="right">時刻</th><th data-field="name" data-align="center">類</th><th data-field="price">ログ</th></tr></thead><tbody></tbody></table><input id="' + e.id + '_cmd_input" type="text" class="form-control input-sm" placeholder="コマンドを入力..." value="過去ログを表示しています" style="display: inline-block; width: 89%; margin: 0 0.5%;"><button id="' + e.id + '_cmd_button" class="btn btn-primary" style="margin: 0 0.5%; width: 9%; padding: 1px; height: 24px;">送信</button></div></div>');
+        $('#detail_content').append('<div class="tab-pane' + content + '" id="' + e.id + '_content" style="margin-top: 4px;"><div id="row"><div class="col-xs-5 s-pad"><p id="' + e.id + '_status_text">ステータス：停止</p><p id="' + e.id + '_start_text" style="overflow-x: hidden;">開始時刻：----/--/-- --:--:--</p><p id="' + e.id + '_nopeople" style="width: 50%; float: right;">無人時間：--:--:--</p><p id="' + e.id + '_elapsed_text">経過時間：--:--:--</p><p id="' + e.id + '_next_text">次回予定：</p><a id="' + e.id + '_port_text" data-toggle="popover" data-html="true" data-placement="right" data-trigger="manual" style="width: 120%; cursor: pointer;">ポート：閉鎖</a><div id="' + e.id + '_players" class="players"></div></div><div class="col-sm-7" style="max-width:400px; float:right; padding:0;" data-id="' + e.id + '"><button class="btn btn-primary btn-block bt-one" onclick="shell.openItem(\'' + tohtml(e.folder) + '\');">作業フォルダーを開く</button><button class="btn btn-primary btn-block bt-one" data-toggle="modal" data-target="#manage_modal">サーバー/ログ/コマンド履歴/バックアップの管理</button><button id="' + e.id + '_edit_button" class="btn btn-warning bt-two" data-toggle="modal" data-target="#profile_modal">プロファイルの編集</button><button id="' + e.id + '_remove_button" class="btn btn-danger bt-two" onclick="remove_profile($(this).parent().data(\'id\'));">プロファイルの削除</button><button id="' + e.id + '_restart_button" class="btn btn-info pull-right bt-four" onclick="restart_server($(this).parent().data(\'id\'));">再起動</button><button id="' + e.id + '_stop_button" class="btn btn-danger pull-right bt-four" onclick="stop_server($(this).parent().data(\'id\'));">停止</button><button id="' + e.id + '_start_button" class="btn btn-success pull-right bt-four" onclick="start_server($(this).parent().data(\'id\'));">起動</button><button class="btn btn-danger pull-right bt-four" onclick="kill_server($(this).parent().data(\'id\'));">強制終了</button></div></div><table id="' + e.id + '_log" class="table table-hover table-condensed"><thead><tr><th data-field="id" data-align="right">時刻</th><th data-field="name" data-align="center">類</th><th data-field="price">ログ</th></tr></thead><tbody></tbody></table><input id="' + e.id + '_cmd_input" type="text" class="form-control input-sm" placeholder="コマンドを入力..." value="過去ログを表示しています" style="display: inline-block; width: 89%; margin: 0 0.5%;"><button id="' + e.id + '_cmd_button" class="btn btn-primary" style="margin: 0 0.5%; width: 9%; padding: 1px; height: 24px;">送信</button></div></div>');
         $('#' + e.id + '_cmd_input').keyup(function(e_){ if (e_.keyCode === 13) send_command(e.id); });
         $('#' + e.id + '_cmd_button').click(function(){ send_command(e.id); });
         $('#' + e.id + '_cmd_input, #' + e.id + '_cmd_button, #' + e.id + '_stop_button, #' + e.id + '_restart_button').prop("disabled", true);
@@ -1430,15 +1421,6 @@ function time(extra){
         return Year + '/' + Month + '/' + Day + ' ' + Hours + ':' + Minutes + ':' + Seconds;
     else
         return Hours + ':' + Minutes + ':' + Seconds;
-}
-
-//エクスプローラーで開く
-function open_directry(d){
-    if (process.platform === 'win32') exec('explorer', [d]);
-    else if (open_d !== '') exec(open_d, [d]);
-    //p.stdout.on('data', function(data){ console.log(data.toString()) });
-    //p.stderr.on('data', function(data){ console.log(data.toString()) });
-    //p.on('exit', function (code){ console.log(code.toString()) });
 }
 
 //バージョン比較
