@@ -48,6 +48,7 @@ function ver(e){
 
 var electron = require('electron');
 var shell = electron.shell;
+var clipboard = electron.clipboard;
 var remote = electron.remote;
 var ipc = electron.ipcRenderer;
 var dialog = remote.dialog;
@@ -85,11 +86,8 @@ $(document).on('contextmenu', function(e){
     } else if ($(e.target).parent().get(0).className === 'player'){
         var name = $(e.target).text();
         var id = $(e.target).attr('class').slice(0, $(e.target).attr('class').indexOf('_'));
-        $('#copy_player').remove();
-        $('body').append('<button id="copy_player" data-clipboard-text="' + name + '" style="display:none;"></button>');
-        new Clipboard('#copy_player');
         remote.Menu.buildFromTemplate([
-            {label: '名前をコピー', click: function(){ $('#copy_player').trigger('click'); }},
+            {label: '名前をコピー', click: () => clipboard.writeText(name)},
             {type: 'separator'},
             {label: '「' + name + '」をBAN', click: function(){ send_command(id, 'ban ' + name); }},
             {label: '「' + name + '」のIPをBAN', click: function(){ send_command(id, 'ban-ip ' + name); }},
@@ -1121,11 +1119,9 @@ function create_detail(extra){
             evt.stopPropagation();
             if (!$(this).attr('aria-describedby')) $(this).popover('show');
             else { $(this).popover('hide'); return; }
-            var c = new Clipboard('.pop_button');
-            c.on('success', function(e_){
-                $('.pop_button').text('コピーしました');
-                setTimeout(function(){ $('.pop_button').text('アドレスをコピーする'); }, 2000);
-            });
+            clipboard.writeText($(this).data('clipboard-text'))
+            $('.pop_button').text('コピーしました');
+            setTimeout(function(){ $('.pop_button').text('アドレスをコピーする'); }, 2000);
         })
         .popover({
             title: function(){
