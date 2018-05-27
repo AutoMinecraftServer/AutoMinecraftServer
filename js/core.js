@@ -126,17 +126,15 @@ $('[name="toggle"]').bootstrapSwitch();
 $(window).on('resize', function(){
     var h = ($(window).height() / (dpi / 72))// - 20;
     $('#main').height(h + 'px');
-    $.each(profiles, function(i, e){ $('#' + e.id + '_content').find('.dataTables_scrollBody').height(h - 265 + 'px'); });
+    Object.keys(profiles).forEach((k, i) => $('#' + profiles[k].id + '_content').find('.dataTables_scrollBody').height(h - 265 + 'px'));
     if ($(window).width() > 1380 && $('#menu').data('show')) menu();
 });
 //$.fn.dataTable.moment('YYYY/MM//DD HH:mm:ss.SSS');
+var org = 'https://raw.githubusercontent.com/AutoMinecraftServer/AutoMinecraftServer/master/parts/';
 //最新情報読み込み
-var org = 'https://raw.githubusercontent.com/AutoMinecraftServer/AutoMinecraftServer/';
-$.ajax({ url: org + 'master/parts/info.html', type: 'GET',
-    success: function(data){ $('.info').html(data); }, error: function(xhr, status, err){} });
+fetch(org + '/info.html').then(res => res.text()).then(data => $('.info').html(data))
 //Minecraftバージョン情報取得
-$.ajax({ url: org + 'master/parts/versions.html', type: 'GET',
-    success: function(data){ $('#version_body').html(data); }, error: function(xhr, status, err){} });
+fetch(org + '/versions.html').then(res => res.text()).then(data => $('#version_body').html(data))
 
 //プロファイル、設定ファイル読み込み
 fs.readFile(base_dir + 'profile.ams', 'utf8', function(e, t){
@@ -149,9 +147,7 @@ fs.readFile(base_dir + 'profile.ams', 'utf8', function(e, t){
         load_end(true);
         return;
     }
-    $.each(profiles, function(i, p){
-        profile_ready(p.id);
-    });
+    Object.keys(profiles).forEach(k => profile_ready(profiles[k].id));
     //reload_profile();
     create_detail(null);
 });
@@ -242,8 +238,8 @@ $('#profile_save').click(function(){
         }
         //名前重複
         else
-            $.each(profiles, function(i, e){
-                if ($('#name').val() === e.name){
+            Object.keys(profiles).forEach(function(k, i){
+                if ($('#name').val() === profiles[k].name){
                     $('#name').parent().addClass('has-error');
                     error = true;
                 }
@@ -265,8 +261,8 @@ $('#profile_save').click(function(){
     }
     else {
         //名前重複(新規)
-        $.each(profiles, function(i, e){
-            if ($('#name').val() === e.name){
+        Object.keys(profiles).forEach(function(k, i){
+            if ($('#name').val() === profiles[k].name){
                 $('#name').parent().addClass('has-error');
                 error = true;
             }
@@ -391,7 +387,7 @@ $('#manage_modal').on('show.bs.modal', function(event){
     ipc.send('load_manage', a);
     $('#manage_title').text('サーバー/ログ/コマンド履歴/バックアップの管理 - ' + a.name + ' -');
     var data = '<tr><th>全ての履歴</th><th><button type="button" class="btn btn-danger command_del" data-text="">削除</button></th></tr>';
-    $.each(indices[a.id], function(i, e_){
+    indices[a.id].forEach(function(e_, i){
         data += '<tr><th>' + e_ + '</th><th><button type="button" class="btn btn-danger command_del" data-text="' + e_ + '">削除</button></th></tr>';
     });
     $('#command_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">コマンド</th><th data-sortable="false">操作</th></tr></thead><tbody>' + data + '</tbody></table>');
@@ -408,7 +404,7 @@ $('#manage_modal').on('show.bs.modal', function(event){
                 if (text === '' && b === 0){
                     indices[a.id] = ['achievement', 'ban', 'ban-ip', 'banlist', 'blockdata', 'clear', 'clone', 'debug', 'defaultgamemode', 'deop', 'difficulty', 'effect', 'enchant', 'entitydata', 'execute', 'fill', 'gamemode', 'gamerule', 'give', 'help', 'kick', 'kill', 'list', 'me', 'op', 'pardon', 'pardon-ip', 'particle', 'playsound', 'replaceitem', 'save-all', 'save-off', 'save-on', 'say', 'scoreboard', 'seed', 'setblock', 'setidletimeout', 'setworldspawn', 'spawnpoint', 'spreadplayers', 'stats', 'stop', 'tell', 'tellraw', 'testfor', 'testforblock', 'testforblocks', 'time', 'title', 'toggledownfall', 'tp', 'trigger', 'weather', 'whitelist', 'worldborader', 'xp'];
                     var data = '<tr><th>すべての履歴</th><th><button type="button" class="btn btn-danger command_del" data-text="">削除</button></th></tr>';
-                    $.each(indices[a.id], function(i, e_){
+                    indices[a.id].forEach(function(e_, i){
                         data += '<tr><th>' + e_ + '</th><th><button type="button" class="btn btn-danger command_del" data-text="' + e_ + '">削除</button></th></tr>';
                     });
                     $('#command_content').html('<table class="table table-hover table-condensed manage_table"><thead><tr><th data-sortable="false">コマンド</th><th data-sortable="false">操作</th></tr></thead><tbody>' + data + '</tbody></table>');
@@ -476,7 +472,7 @@ ipc.on('load_logs', function(e, data){
         $('#log_content').html('<h3>ログファイルはありません</h3>');
         return;
     }
-    $.each(data, function(i, e_){
+    data.forEach(function(e_, i){
         if (i === 0) html += '<tr><th>すべてのファイル</th><th><button type="button" class="btn btn-danger log_del" data-file="' + e_ + '">削除</button></th></tr>'
         else html += '<tr><th>' + e_.slice(e_.lastIndexOf(slash) + slash.length) + '</th><th><button type="button" class="btn btn-danger log_del" data-file="' + e_ + '">削除</button></th></tr>';
     });
@@ -503,7 +499,7 @@ ipc.on('load_backup', function(e, data){
         $('#backup_content').html('<h3>バックアップはありません</h3>');
         return;
     }
-    $.each(data.data, function(i, e_){
+    data.data.forEach(function(e_, i){
         if (i === 0) html = '<tr><th><a onclick="shell.openItem(\'' + tohtml(e_) + '\');">全てのバックアップ</a></th><th></th><th><button type="button" class="btn btn-danger backup_del" data-folder="' + e_ + '">削除</button></th></tr>';
         else {
             var date = e_.slice(e_.lastIndexOf(slash) + slash.length);
@@ -556,7 +552,7 @@ $('#settings_save').click(function(){
     }
     var bd_bak = settings.backup_dir_bool;
     var s = $('.settings');
-    $.each(s, function(a,b){
+    s.each(function(b, a){
         if ($(b).attr('type') === 'checkbox') settings[$(b).attr('id')] = $(b).prop('checked');
         else settings[$(b).attr('id')] = $(b).val();
         if (s.length === a + 1){
@@ -609,17 +605,13 @@ $('#remove_file').click(function(){
     $('#remove_modal').modal('hide');
 });*/
 $('#eula_modal').on('show.bs.modal', function(e){
-    $.ajax({
-        url: 'https://account.mojang.com/documents/minecraft_eula',
-        type: 'GET',
-        success: function(data){
-                data = data.replace('/images', 'https://account.mojang.com/images');
-                var s = data.indexOf('<div id="main"');
-                var e = data.indexOf('<footer');
-                $('#eula_div').html(data.slice(s, e - 7));
-            }
-        });
-    //$('#eula_iframe')[0].contentDocument.location.replace('https://account.mojang.com/documents/minecraft_eula');
+    fetch('https://account.mojang.com/documents/minecraft_eula').then(res => res.text())
+      .then(data => {
+        data = data.replace('/images', 'https://account.mojang.com/images');
+        var s = data.indexOf('<div id="main"');
+        var e = data.indexOf('<footer');
+        $('#eula_div').html(data.slice(s, e - 7));
+      })
 });
 $('#eula_modal').on('hide.bs.modal', function(e){ $('#eula_agree').off('click'); });
 
@@ -682,17 +674,15 @@ $('#report_send').click(function(){
     else if ($('#report_type').text().trim() === '不具合報告') data = { type: 'report', text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
     else  data = { type: 'demand', text: $('#report_text').val(), ver: app.getVersion(), os: process.platform };
     $('#report_modal').modal('hide');
-    $.ajax({
-        url: 'http://ams.xperd.net/report.php', type: 'POST', data: data,
-        success: () => $('#report_text').val(''),
-        error: (xhr, status, err) => {
-          var type = $('#report_type').text().trim().slice(0, 3)
-          dialog.showMessageBox(browserWindow.getFocusedWindow(), {
-              title: type + '送信失敗', type: 'warning', message: type + 'を正しく送信できませんでした',
-              detail: '時間を開けて再送信するか、公式フォーラムから問い合わせてください',
-          });
-        },
-    });
+    fetch('http://ams.xperd.net/report.php', {
+      method: 'POST', body: JSON.stringify(data)
+    }).then(() => $('#report_text').val('')).catch(() => {
+      var type = $('#report_type').text().trim().slice(0, 3)
+      dialog.showMessageBox(browserWindow.getFocusedWindow(), {
+        title: type + '送信失敗', type: 'warning', message: type + 'を正しく送信できませんでした',
+        detail: '時間を開けて再送信するか、公式フォーラムから問い合わせてください',
+      });
+    })
 });
 $('.reload').click(function(){
     dialog.showMessageBox(browserWindow.getFocusedWindow(), {
@@ -965,15 +955,8 @@ function port_check(id, port_num){
     }
 
     if (id === undefined) $('#port_check_manual').text('お待ちください...').prop('disabled', true);;
-    $.ajax({
-        url: 'http://ams.xperd.net/port_check.php?port=' + port_num
-    }).done(function(data){
-        //ajaxの通信に成功した場合
-        after(true);
-    }).fail(function(data){
-        //ajaxの通信に失敗した場合
-        after(false);
-    });
+    fetch('http://ams.xperd.net/port_check.php?port=' + port_num)
+      .then(() => after(true)).catch(() => after(false))
 }
 
 //稼働時間管理
@@ -1078,10 +1061,10 @@ function load_zip(base_file){
 
 //jarファイル検索
 function jar_check(data){
-    var l = $.grep(data, function(elem, index){ return (path.extname(elem) === '.jar'); });
+    var l = data.filter(elem => path.extname(elem) === '.jar');
     if (l.length === 1) return l;
     else {
-        var l_ = $.grep(data, function(elem, index){ return (path.extname(elem) === '.jar' && elem.indexOf('universal') > -1); });
+        var l_ = l.filter(elem => elem.includes('universal'));
         if (l_.length === 1) return l_;
         else return l;
     }
@@ -1089,7 +1072,7 @@ function jar_check(data){
 
 /*function reload_profile(){
     $('#status').empty();
-    $.each(profiles, function(i, e){
+    Object.keys(profiles).forEach(function(k, i){
         $('#status').append('<tr data-toggle="collapse" data-target="#' + e.id + '_status" class="danger clickable ' + e.id + '_status_color"><td>' + e.name + '</td><td id="' + e.id + '_elapsed_list_text">--:--:--</td></tr><tr class="danger ' + e.id + '_status_color"><td colspan="3" style="padding: 0 8px; border:0;"><div id="' + e.id + '_status" class="collapse"><div style="margin: 8px;"><p id="' + e.id + '_status_list_text">ステータス：停止</p><div id="' + e.id + '_status_players"></div></div></div></td></tr>');
     });
 }*/
@@ -1116,11 +1099,7 @@ function profile_ready(id, first){
 function create_detail(extra){
     $('main_right .active').removeClass('active');
     if (extra === null ){
-        var i_ = 0;
-        $.each(profiles, function(i, e){
-            add_detail(i_, e);
-            i_++;
-        });
+        Object.keys(profiles).forEach((k, i) => add_detail(i, profiles[k]));
     } else
         add_detail(0, profiles[extra]);
     function add_detail(i, e){
@@ -1273,52 +1252,47 @@ function start_download(id, ver, mode, latest, per){
         });
     }
     else {
-        $.ajax({
-            url: 'http://files.minecraftforge.net/maven/net/minecraftforge/forge/index_' + ver + '.html',
-            type: 'GET',
-            success: function(data){
-                d = data;
-                percent(p(3), 'HTML解析中...(' + p(3) + '%)');
-                var s = 0;
-                if (!latest){ // 推奨
-                    s = data.indexOf('Download Recommended');
-                    if (s === -1) s = data.indexOf('Download Latest');
-                }
-                else { // 最新
-                    s = data.indexOf('Download Latest');
-                }
-                var s_ = data.indexOf('Changelog', s);
-                var start = data.indexOf('url=', s_);
-                var end = data.indexOf('"', start);
-                url = data.slice(start + 4, end);
-                file = path.basename(url);
-                percent(p(5), 'ダウンロード開始中...(' + p(5) + '%)');
-                require('request-progress')(request(url), { throttle: 200 })
-                .on('progress', function(state){
-                    percent(p(Math.round(5 + state.percent * 100 * 0.1)), 'ダウンロード中... ' + round(state.time.remaining) + '(' + p(Math.round(5 + state.percent * 100 * 0.1)) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
-                })
-                .on('error', function(err){})
-                .pipe(fs.createWriteStream(profiles[id].folder + slash + file))
-                .on('close', function(err){
-                    var c = 0;
-                    percent(p(15), 'インストール開始中...(' + p(15) + '%)');
-                    var e = exec('java', ['-jar', file, '--installServer'], { cwd: profiles[id].folder });
-                    e.stdout.on('data', function(data){
-                        console.log(data.toString());
-                        if (data.toString().indexOf('you should now be able to run the file') > -1)
-                            file = data.toString().slice(data.toString().indexOf('file') + 5, data.toString().indexOf('.jar') + 4);
-                        c++;
-                        percent(p(Math.round(15 + c / 1.5)), 'インストール中...(' + p(Math.round(15 + c / 1.5)) + '%)');
-                    });
-                    //e.stderr.on('data', function(data){ console.log(data.toString()); })
-                    e.on('exit', function(code){
-                        percent(p(100), 'インストール完了');
-                        end_progress(id, profiles[id].folder + slash + file);
-                    });
-                });
-            },
-            error: function(xhr, status, err){}
-        });
+        fetch('http://files.minecraftforge.net/maven/net/minecraftforge/forge/index_' + ver + '.html')
+          .then(res => res.text()).then(data => {
+            percent(p(3), 'HTML解析中...(' + p(3) + '%)');
+            var s = 0;
+            if (!latest){ // 推奨
+              s = data.indexOf('Download Recommended');
+              if (s === -1) s = data.indexOf('Download Latest');
+            }
+            else { // 最新
+              s = data.indexOf('Download Latest');
+            }
+            var s_ = data.indexOf('Changelog', s);
+            var start = data.indexOf('url=', s_);
+            var end = data.indexOf('"', start);
+            url = data.slice(start + 4, end);
+            file = path.basename(url);
+            percent(p(5), 'ダウンロード開始中...(' + p(5) + '%)');
+            require('request-progress')(request(url), { throttle: 200 })
+            .on('progress', function(state){
+              percent(p(Math.round(5 + state.percent * 100 * 0.1)), 'ダウンロード中... ' + round(state.time.remaining) + '(' + p(Math.round(5 + state.percent * 100 * 0.1)) + '% ' + Math.round(state.size.transferred / 1000) + '/' + Math.round(state.size.total / 1000) + 'KB)');
+            })
+            .on('error', function(err){})
+            .pipe(fs.createWriteStream(profiles[id].folder + slash + file))
+            .on('close', function(err){
+              var c = 0;
+              percent(p(15), 'インストール開始中...(' + p(15) + '%)');
+              var e = exec('java', ['-jar', file, '--installServer'], { cwd: profiles[id].folder });
+              e.stdout.on('data', function(data){
+                console.log(data.toString());
+                if (data.toString().indexOf('you should now be able to run the file') > -1)
+                file = data.toString().slice(data.toString().indexOf('file') + 5, data.toString().indexOf('.jar') + 4);
+                c++;
+                percent(p(Math.round(15 + c / 1.5)), 'インストール中...(' + p(Math.round(15 + c / 1.5)) + '%)');
+              });
+              //e.stderr.on('data', function(data){ console.log(data.toString()); })
+              e.on('exit', function(code){
+                percent(p(100), 'インストール完了');
+                end_progress(id, profiles[id].folder + slash + file);
+              });
+            });
+          })
         percent(p(1), 'HTML取得中...(' + p(1) + '%)');
     }
 }
