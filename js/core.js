@@ -707,24 +707,13 @@ $(document).on('click', 'html', function(){ $('[data-toggle=popover]').popover('
 
 //メニュー
 function menu(){
-    var p = true;
-    if (profiles !== undefined){
-        if (Object.keys(profiles).length === 0) p = false;
-    }
-    else p = false;
-    if ($(window).width() > 1380) p = true;
+    var p = Object.keys(profiles || {}).length || $(window).width() > 1380
 
     if ($('#menu').data('show') && p){
-        $('#menu_button').css({'background-color': '#555'});
-        $('#menu_title').css('color', 'white');
-        $('#menu_icon').css({'border-top': '1px solid white', 'border-right': '1px solid white','transform': 'rotate(135deg)', 'margin-top': '0'});
-        $('#menu').hide();
+        $('#menu,#menu_button').removeClass('open');
         $('#menu').data('show', false);
     } else {
-        $('#menu_button').css({'background-color': '#f5f5f5'});
-        $('#menu_title').css('color', 'black');
-        $('#menu_icon').css({'border-top': '1px solid black', 'border-right': '1px solid black','transform': 'rotate(315deg)', 'margin-top': '8px'});
-        $('#menu').show();
+        $('#menu,#menu_button').addClass('open');
         $('#menu').data('show', true);
     }
 }
