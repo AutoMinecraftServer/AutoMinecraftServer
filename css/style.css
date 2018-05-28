@@ -12,14 +12,14 @@
 }
 
 /*::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 }*/
 
 ::-webkit-scrollbar-thumb {
-    /*-webkit-border-radius: 10px;
+    /*border-radius: 10px;
     border-radius: 10px;*/
     background: rgba(0,0,0,0.2);
-    /*-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); */
+    /*box-shadow: inset 0 0 6px rgba(0,0,0,0.5); */
 }
 
 .btn:focus {
@@ -320,7 +320,6 @@ input[type="range"].custom:focus {
     position: absolute;
     font-size: 0.1px;
     display: block;
-    -ms-touch-action: none;
     touch-action: none;
 }
 .ui-resizable-s {
